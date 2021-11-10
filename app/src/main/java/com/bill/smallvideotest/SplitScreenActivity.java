@@ -4,6 +4,7 @@ import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -92,43 +93,51 @@ public class SplitScreenActivity extends AppCompatActivity {
             }
         });
 
-        mPlayer = new MediaPlayer();
-        mPlayer.setOnPreparedListener(mp -> mPlayer.start());
-        mPlayer.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
-            @Override
-            public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
-                mTextureView1.setVideoSize(width, height);
-                mTextureView2.setVideoSize(width, height);
-            }
-        });
-        mPlayer.setOnInfoListener((mp, what, extra) -> {
-            if (what == 3 && currentPlayIv != null) {
-                currentPlayIv.setVisibility(View.GONE);
-            }
-            return false;
-        });
-
     }
 
     private void showCover(AppCompatImageView imageView, String url) {
         Glide.with(this).load(url).into(imageView);
     }
 
+    private MediaPlayer getPlayer() {
+        MediaPlayer player = PlayerManager.getInstance().getAvailableMediaPlayer();
+        player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        player.setLooping(true);
+        player.setOnPreparedListener(mp -> {
+            Log.d("Bill", "prepare = " + mp);
+            mp.start();
+        });
+        player.setOnVideoSizeChangedListener((mp, width, height) -> {
+            mTextureView1.setVideoSize(width, height);
+            mTextureView2.setVideoSize(width, height);
+        });
+        player.setOnInfoListener((mp, what, extra) -> {
+            if (what == 3 && currentPlayIv != null) {
+                currentPlayIv.setVisibility(View.GONE);
+            }
+            return false;
+        });
+        player.setOnErrorListener((mp, what, extra) -> {
+            Log.e("Bill", "onError (" + what + "," + extra + ")");
+            return false;
+        });
+        return player;
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mPlayer.stop();
-        mPlayer.setSurface(null);
-        mPlayer.release();
+        if (mPlayer != null) {
+            mPlayer.stop();
+            mPlayer.setSurface(null);
+        }
+        PlayerManager.getInstance().recycle();
     }
 
     public void handleItem1(View view) {
         currentPlayIv = coverIv1;
         showCover(coverIv2, IMG_URL_2);
-        mPlayer.reset();
-
-        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mPlayer.setLooping(true);
+        mPlayer = getPlayer();
 
         try {
             mPlayer.setDataSource(URL1);
@@ -142,10 +151,7 @@ public class SplitScreenActivity extends AppCompatActivity {
     public void handleItem2(View view) {
         currentPlayIv = coverIv2;
         showCover(coverIv1, IMG_URL_1);
-        mPlayer.reset();
-
-        mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mPlayer.setLooping(true);
+        mPlayer = getPlayer();
 
         try {
             mPlayer.setDataSource(URL2);
