@@ -78,6 +78,10 @@ public class SmallVideoListAdapter extends RecyclerView.Adapter<SmallVideoListAd
             mData = mDataList.get(position);
             Glide.with(mContext).load(mData.image).into(mThumbIv);
         }
+
+        public void releaseCurrentView() {
+            mThumbIv.setVisibility(View.VISIBLE);
+        }
     }
 
 }

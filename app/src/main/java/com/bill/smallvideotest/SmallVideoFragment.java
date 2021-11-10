@@ -66,6 +66,7 @@ public class SmallVideoFragment extends Fragment {
         mVideoRv.setAdapter(mAdapter);
 
         mPlayerHelper = new PlayerHelper(mVideoRv);
+        this.getLifecycle().addObserver(mPlayerHelper);
         mPlayerHelper.setOnPreLoadListener(new PlayerHelper.OnPreLoadListener() {
             @Override
             public void onLoad() {
@@ -89,6 +90,5 @@ public class SmallVideoFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mPlayerHelper.release();
     }
 }

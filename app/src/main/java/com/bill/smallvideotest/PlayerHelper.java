@@ -2,6 +2,10 @@ package com.bill.smallvideotest;
 
 import android.view.View;
 
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.OnLifecycleEvent;
 import androidx.recyclerview.widget.RecyclerView;
 
 /**
@@ -9,10 +13,10 @@ import androidx.recyclerview.widget.RecyclerView;
  * date 2021/10/20
  * desc
  */
-public class PlayerHelper {
+public class PlayerHelper implements LifecycleObserver {
 
-    private RecyclerView mRecyclerView;
-    private VideoLayoutManager mLayoutManager;
+    private final RecyclerView mRecyclerView;
+    private final VideoLayoutManager mLayoutManager;
 
     private SmallVideoListAdapter.VideoHolder mCurHolder;
     private int mCurrentPosition = -1;
@@ -46,16 +50,13 @@ public class PlayerHelper {
         });
     }
 
-    public void release() {
-        stopCurVideoView();
-    }
-
     //播放视频
     private void playerVideo() {
         int visibleItemPosition = mLayoutManager.findLastCompletelyVisibleItemPosition();
         if (visibleItemPosition >= 0 && mCurrentPosition != visibleItemPosition) {
             stopCurVideoView(); //停止上一个视频
             mCurrentPosition = visibleItemPosition;
+            mCurHolder = null;
             View holderView = mRecyclerView.findViewWithTag(mCurrentPosition);
             if (holderView != null) {
                 mCurHolder = (SmallVideoListAdapter.VideoHolder) mRecyclerView.getChildViewHolder(holderView);
@@ -67,8 +68,10 @@ public class PlayerHelper {
     //停止视频
     private void releaseVideo(int position) {
         View holderView = mRecyclerView.findViewWithTag(position);
+        if (holderView == null) return;
         final VideoPlayer videoView = holderView.findViewById(R.id.video_player);
-        videoView.release();
+        if (videoView != null)
+            videoView.release();
     }
 
     private void stopCurVideoView() {
@@ -91,6 +94,23 @@ public class PlayerHelper {
 
     public interface OnPreLoadListener {
         void onLoad();
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_ANY)
+    void onLifecycleReceived(LifecycleOwner source, Lifecycle.Event event) {
+        if (mCurHolder == null) {
+            return;
+        }
+
+        if (event == Lifecycle.Event.ON_RESUME) {
+            mCurHolder.mVideoPlayer.play();
+        } else if (event == Lifecycle.Event.ON_PAUSE) {
+            mCurHolder.mVideoPlayer.pause();
+        } else if (event == Lifecycle.Event.ON_STOP) {
+            mCurHolder.releaseCurrentView();
+            mCurHolder.mVideoPlayer.release();
+        }
+
     }
 
 }
