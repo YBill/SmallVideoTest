@@ -74,7 +74,6 @@ public class SmallVideoListAdapter extends RecyclerView.Adapter<SmallVideoListAd
         }
 
         private void update(int position) {
-            itemView.setTag(position);
             mData = mDataList.get(position);
             Glide.with(mContext).load(mData.image).into(mThumbIv);
         }

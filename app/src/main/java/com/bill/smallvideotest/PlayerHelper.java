@@ -57,7 +57,7 @@ public class PlayerHelper implements LifecycleObserver {
             stopCurVideoView(); //停止上一个视频
             mCurrentPosition = visibleItemPosition;
             mCurHolder = null;
-            View holderView = mRecyclerView.findViewWithTag(mCurrentPosition);
+            View holderView = mLayoutManager.findViewByPosition(mCurrentPosition);
             if (holderView != null) {
                 mCurHolder = (SmallVideoListAdapter.VideoHolder) mRecyclerView.getChildViewHolder(holderView);
                 startCurVideoView(); //开始播放视频
@@ -67,7 +67,7 @@ public class PlayerHelper implements LifecycleObserver {
 
     //停止视频
     private void releaseVideo(int position) {
-        View holderView = mRecyclerView.findViewWithTag(position);
+        View holderView = mLayoutManager.findViewByPosition(position);
         if (holderView == null) return;
         final VideoPlayer videoView = holderView.findViewById(R.id.video_player);
         if (videoView != null)
