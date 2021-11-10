@@ -16,6 +16,7 @@ public class VideoTextureView extends TextureView {
 
     private int mVideoWidth;
     private int mVideoHeight;
+    private int mCurrentAspectRatio;
 
     public VideoTextureView(@NonNull Context context) {
         super(context);
@@ -33,6 +34,10 @@ public class VideoTextureView extends TextureView {
         mVideoWidth = videoWidth;
         mVideoHeight = videoHeight;
         requestLayout();
+    }
+
+    public void setAspectRatio(@ScaleType int aspectRatio) {
+        mCurrentAspectRatio = aspectRatio;
     }
 
     @Override
@@ -53,21 +58,29 @@ public class VideoTextureView extends TextureView {
 
         if (mVideoWidth > 0 && mVideoHeight > 0) {
 
-            // 留黑边，类似 fitCenter
-            /*if (mVideoWidth * height < width * mVideoHeight) {
-                width = height * mVideoWidth / mVideoHeight;
-            } else if (mVideoWidth * height > width * mVideoHeight) {
-                height = width * mVideoHeight / mVideoWidth;
-            }*/
+            switch (mCurrentAspectRatio) {
+                case ScaleType.AR_ASPECT_FIT_PARENT:
+                    // 留黑边，类似 fitCenter
+                    if (mVideoWidth * height < width * mVideoHeight) {
+                        width = height * mVideoWidth / mVideoHeight;
+                    } else if (mVideoWidth * height > width * mVideoHeight) {
+                        height = width * mVideoHeight / mVideoWidth;
+                    }
+                    break;
+                case ScaleType.AR_ASPECT_FILL_PARENT:
+                    // 裁切，类似 centerCrop
+                    if (width * mVideoHeight < height * mVideoWidth) {
+                        width = mVideoWidth * height / mVideoHeight;
+                    } else if (width * mVideoHeight > height * mVideoWidth) {
+                        height = mVideoHeight * width / mVideoWidth;
+                    }
+                    break;
+                case ScaleType.AR_MATCH_PARENT:
+                default:
+                    // 默认是全屏填满，类似 fitXY
 
-            // 裁切，类似 centerCrop
-            if (width * mVideoHeight < height * mVideoWidth) {
-                width = mVideoWidth * height / mVideoHeight;
-            } else if (width * mVideoHeight > height * mVideoWidth) {
-                height = mVideoHeight * width / mVideoWidth;
+                    break;
             }
-
-            // 默认是全屏填满，类似 fitXY
 
         }
 

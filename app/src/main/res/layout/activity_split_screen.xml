@@ -10,12 +10,21 @@
         android:id="@+id/fl_item_1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#000"
         app:height_relative_width_aspect_ratio="0.5625">
 
-        <TextureView
+        <com.bill.smallvideotest.VideoTextureView
             android:id="@+id/render_view_1"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_cover_1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            tools:src="@tools:sample/avatars" />
 
     </com.bill.smallvideotest.widget.AutoScaleFrameLayout>
 
@@ -24,12 +33,21 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/fl_item_1"
         android:layout_marginTop="10dp"
+        android:background="#000"
         app:height_relative_width_aspect_ratio="0.5625">
 
-        <TextureView
+        <com.bill.smallvideotest.VideoTextureView
             android:id="@+id/render_view_2"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_cover_2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            tools:src="@tools:sample/avatars" />
 
     </com.bill.smallvideotest.widget.AutoScaleFrameLayout>
 
@@ -42,13 +60,15 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:onClick="handleItem1" />
+            android:onClick="handleItem1"
+            android:text="Play Up" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:onClick="handleItem2" />
+            android:onClick="handleItem2"
+            android:text="Play Bottom" />
 
     </LinearLayout>
 

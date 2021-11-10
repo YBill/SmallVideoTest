@@ -221,6 +221,7 @@ public class VideoPlayer extends RelativeLayout {
         mPlayBtn = this.findViewById(R.id.player_play_btn);
         mThumbIv = this.findViewById(R.id.player_cover);
         mTextureView = this.findViewById(R.id.player_content);
+        mTextureView.setAspectRatio(ScaleType.AR_ASPECT_FILL_PARENT);
     }
 
     private void initListener() {
