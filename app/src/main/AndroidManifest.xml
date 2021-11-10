@@ -13,6 +13,9 @@
         android:theme="@style/Theme.SmallVideoTest"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".SplitScreenActivity"
+            android:exported="true" />
+        <activity
             android:name=".SmallVideoListAct"
             android:exported="true" />
         <activity

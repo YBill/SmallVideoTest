@@ -23,4 +23,9 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, SmallVideoListAct.class);
         startActivity(intent);
     }
+
+    public void handleSplitScreen(View view) {
+        Intent intent = new Intent(this, SplitScreenActivity.class);
+        startActivity(intent);
+    }
 }
