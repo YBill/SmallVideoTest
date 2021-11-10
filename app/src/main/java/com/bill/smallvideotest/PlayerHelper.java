@@ -1,5 +1,7 @@
 package com.bill.smallvideotest;
 
+import android.content.Context;
+import android.util.Log;
 import android.view.View;
 
 import androidx.lifecycle.Lifecycle;
@@ -7,6 +9,8 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bill.smallvideotest.cache.PreloadManager;
 
 /**
  * author ywb
@@ -23,7 +27,9 @@ public class PlayerHelper implements LifecycleObserver {
 
     private OnPreLoadListener mOnPreLoadListener;
 
-    public PlayerHelper(RecyclerView recyclerView) {
+    private PreloadManager mPreloadManager;
+
+    public PlayerHelper(Context context, RecyclerView recyclerView) {
         mRecyclerView = recyclerView;
         mLayoutManager = (VideoLayoutManager) mRecyclerView.getLayoutManager();
         if (mLayoutManager == null)
@@ -48,6 +54,7 @@ public class PlayerHelper implements LifecycleObserver {
                     mOnPreLoadListener.onLoad();
             }
         });
+        mPreloadManager = PreloadManager.getInstance(context);
     }
 
     //播放视频
@@ -84,7 +91,9 @@ public class PlayerHelper implements LifecycleObserver {
     private void startCurVideoView() {
         if (mCurHolder == null) return;
         if (!mCurHolder.mVideoPlayer.isPlaying()) {
-            mCurHolder.mVideoPlayer.setVideoPath(mCurHolder.mData.path);
+            String playUrl = mPreloadManager.getPlayUrl(mCurHolder.mData.path);
+            Log.e("Bill", "playUrl = " + playUrl);
+            mCurHolder.mVideoPlayer.setVideoPath(playUrl);
         }
     }
 
@@ -109,6 +118,8 @@ public class PlayerHelper implements LifecycleObserver {
         } else if (event == Lifecycle.Event.ON_STOP) {
             mCurHolder.releaseCurrentView();
             mCurHolder.mVideoPlayer.release();
+        } else if (event == Lifecycle.Event.ON_DESTROY) {
+            mPreloadManager.removeAllPreloadTask();
         }
 
     }

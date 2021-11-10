@@ -65,7 +65,7 @@ public class SmallVideoFragment extends Fragment {
         mAdapter.setDataList(getData());
         mVideoRv.setAdapter(mAdapter);
 
-        mPlayerHelper = new PlayerHelper(mVideoRv);
+        mPlayerHelper = new PlayerHelper(getActivity(), mVideoRv);
         this.getLifecycle().addObserver(mPlayerHelper);
         mPlayerHelper.setOnPreLoadListener(new PlayerHelper.OnPreLoadListener() {
             @Override

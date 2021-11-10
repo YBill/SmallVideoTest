@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bill.smallvideotest.cache.PreloadManager;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
@@ -76,6 +77,9 @@ public class SmallVideoListAdapter extends RecyclerView.Adapter<SmallVideoListAd
         private void update(int position) {
             mData = mDataList.get(position);
             Glide.with(mContext).load(mData.image).into(mThumbIv);
+
+            Log.e("Bill", "pre load, position = " + position);
+            PreloadManager.getInstance(mContext).addPreloadTask(mData.path, position);
         }
 
         public void releaseCurrentView() {
