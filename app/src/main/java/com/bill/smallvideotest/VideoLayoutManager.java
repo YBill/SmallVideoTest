@@ -82,8 +82,7 @@ public class VideoLayoutManager extends LinearLayoutManager implements RecyclerV
 
     @Override
     public void onChildViewAttachedToWindow(@NonNull View view) {
-        int position = getPosition(view);
-        if (0 == position) {
+        if (getChildCount() == 1 && getPosition(view) == 0) {
             if (mOnViewPagerListener != null)
                 mOnViewPagerListener.onPageSelected(getPosition(view), false);
         }

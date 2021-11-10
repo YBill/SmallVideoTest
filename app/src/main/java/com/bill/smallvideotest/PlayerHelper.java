@@ -1,6 +1,5 @@
 package com.bill.smallvideotest;
 
-import android.util.Log;
 import android.view.View;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -29,11 +28,13 @@ public class PlayerHelper {
 
             @Override
             public void onPageRelease(int position) {
+                if (mCurrentPosition != position) return;
                 releaseVideo(position);
             }
 
             @Override
             public void onPageSelected(int position, boolean isBottom) {
+                if (mCurrentPosition == position) return;
                 playerVideo();
             }
 
@@ -80,7 +81,6 @@ public class PlayerHelper {
     private void startCurVideoView() {
         if (mCurHolder == null) return;
         if (!mCurHolder.mVideoPlayer.isPlaying()) {
-            Log.e("VideoPlayer", "play path = " + mCurHolder.mData.path);
             mCurHolder.mVideoPlayer.setVideoPath(mCurHolder.mData.path);
         }
     }

@@ -123,15 +123,30 @@ public class VideoPlayer extends RelativeLayout {
         if (TextUtils.isEmpty(mPath)) {
             return;
         }
+
+        if (mPlayerState == STATE_START) {
+            return;
+        }
+
         mPlayerState = STATE_START;
         if (mMediaPlayer != null) {
-            mMediaPlayer.start();
+            restart();
             setScreenOn(true);
             syncPlayerState(true);
         } else {
             load();
         }
         mPlayBtn.setVisibility(GONE);
+    }
+
+    public void restart() {
+        if (mMediaPlayer != null) {
+            try {
+                mMediaPlayer.start();
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -190,6 +205,7 @@ public class VideoPlayer extends RelativeLayout {
         }
         int duration = 0;
         try {
+            if (mMediaPlayer == null) return 0;
             duration = mMediaPlayer.getDuration();
         } catch (Exception e) {
             e.printStackTrace();
@@ -221,6 +237,7 @@ public class VideoPlayer extends RelativeLayout {
 
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
+                Log.e("VideoPlayer", "onError (" + what + "," + extra + ")");
                 pause();
                 release();
                 return false;
@@ -376,7 +393,7 @@ public class VideoPlayer extends RelativeLayout {
     private void setVideoPlayCompletion() {
         if (mPlayerState == STATE_STOP)
             return;
-        play();
+        restart();
         mRepeatNum++;
         if (mPlayListener != null) {
             mPlayListener.repeatNum(mRepeatNum);
@@ -444,7 +461,6 @@ public class VideoPlayer extends RelativeLayout {
         @Override
         public void run() {
             super.run();
-            Log.e("Bill", "mReleaseMediaPlayer = " + mReleaseMediaPlayer);
             if (mReleaseMediaPlayer != null)
                 mReleaseMediaPlayer.release();
         }
