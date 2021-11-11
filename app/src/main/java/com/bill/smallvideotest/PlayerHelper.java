@@ -1,7 +1,6 @@
 package com.bill.smallvideotest;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
 
 import androidx.lifecycle.Lifecycle;
@@ -9,8 +8,6 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.bill.smallvideotest.cache.PreloadManager;
 
 /**
  * author ywb
@@ -26,8 +23,6 @@ public class PlayerHelper implements LifecycleObserver {
     private int mCurrentPosition = -1;
 
     private OnPreLoadListener mOnPreLoadListener;
-
-    private PreloadManager mPreloadManager;
 
     public PlayerHelper(Context context, RecyclerView recyclerView) {
         mRecyclerView = recyclerView;
@@ -54,7 +49,6 @@ public class PlayerHelper implements LifecycleObserver {
                     mOnPreLoadListener.onLoad();
             }
         });
-        mPreloadManager = PreloadManager.getInstance(context);
     }
 
     //播放视频
@@ -91,9 +85,7 @@ public class PlayerHelper implements LifecycleObserver {
     private void startCurVideoView() {
         if (mCurHolder == null) return;
         if (!mCurHolder.mVideoPlayer.isPlaying()) {
-            String playUrl = mPreloadManager.getPlayUrl(mCurHolder.mData.path);
-            Log.e("Bill", "playUrl = " + playUrl);
-            mCurHolder.mVideoPlayer.setVideoPath(playUrl);
+            mCurHolder.mVideoPlayer.setVideoPath(mCurHolder.mData.path);
         }
     }
 
@@ -119,7 +111,7 @@ public class PlayerHelper implements LifecycleObserver {
             mCurHolder.releaseCurrentView();
             mCurHolder.mVideoPlayer.release();
         } else if (event == Lifecycle.Event.ON_DESTROY) {
-            mPreloadManager.removeAllPreloadTask();
+
         }
 
     }
