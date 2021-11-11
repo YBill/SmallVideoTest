@@ -40,7 +40,7 @@ public final class StorageUtils {
      * @param context        Application context
      * @return Cache {@link File directory}.<br />
      * <b>NOTE:</b> Can be null in some unpredictable cases (if SD card is unmounted and
-     * {@link Context#getCacheDir() Context.getCacheDir()} returns null).
+     * {@link android.content.Context#getCacheDir() Context.getCacheDir()} returns null).
      */
     private static File getCacheDirectory(Context context) {
         File appCacheDir = null;
