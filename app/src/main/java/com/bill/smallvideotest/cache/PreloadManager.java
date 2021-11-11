@@ -37,9 +37,9 @@ public class PreloadManager {
     private HttpProxyCacheServer mHttpProxyCacheServer;
 
     /**
-     * 预加载的大小，每个视频预加载512KB，这个参数可根据实际情况调整
+     * 预加载的大小，每个视频预加载1M，这个参数可根据实际情况调整
      */
-    public static final int PRELOAD_LENGTH = 512 * 1024;
+    public static final int PRELOAD_LENGTH = 1024 * 1024;
 
     private PreloadManager(Context context) {
         mHttpProxyCacheServer = ProxyVideoCacheManager.getProxy(context);
@@ -179,13 +179,17 @@ public class PreloadManager {
     }
 
     /**
-     * 获取代理地址
+     * 获取播放地址
      */
     public String getPlayUrl(String rawUrl) {
         PreloadTask task = mPreloadTasks.get(rawUrl);
         if (task != null) {
             task.cancel();
         }
-        return mHttpProxyCacheServer.getProxyUrl(rawUrl);
+        if (isPreloaded(rawUrl)) {
+            return mHttpProxyCacheServer.getProxyUrl(rawUrl);
+        } else {
+            return rawUrl;
+        }
     }
 }

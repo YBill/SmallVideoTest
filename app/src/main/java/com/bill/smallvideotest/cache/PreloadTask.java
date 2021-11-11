@@ -8,6 +8,8 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 public class PreloadTask implements Runnable {
@@ -37,6 +39,8 @@ public class PreloadTask implements Runnable {
      */
     private boolean mIsExecuted;
 
+    private final static List<String> blackList = new ArrayList<>();
+
     @Override
     public void run() {
         if (!mIsCanceled) {
@@ -50,7 +54,9 @@ public class PreloadTask implements Runnable {
      * 开始预加载
      */
     private void start() {
-        Log.i("VideoCache", "开始预加载：" + mPosition);
+        // 如果在小黑屋里不加载
+        if (blackList.contains(mRawUrl)) return;
+        Log.i("VideoCache", "预加载开始：" + mPosition);
         HttpURLConnection connection = null;
         try {
             //获取HttpProxyCacheServer的代理地址
@@ -67,18 +73,23 @@ public class PreloadTask implements Runnable {
                 read += length;
                 //预加载完成或者取消预加载
                 if (mIsCanceled || read >= PreloadManager.PRELOAD_LENGTH) {
-                    Log.i("VideoCache", "结束预加载：" + mPosition);
-                    connection.disconnect();
+                    if (mIsCanceled) {
+                        Log.i("VideoCache", "预加载取消：" + mPosition + " 读取数据：" + read + " Byte");
+                    } else {
+                        Log.i("VideoCache", "预加载成功：" + mPosition + " 读取数据：" + read + " Byte");
+                    }
                     break;
                 }
             }
-
         } catch (Exception e) {
-            Log.i("VideoCache", "异常结束预加载：" + mPosition);
+            Log.i("VideoCache", "预加载异常：" + mPosition + " 异常信息："+ e.getMessage());
+            // 关入小黑屋
+            blackList.add(mRawUrl);
         } finally {
             if (connection != null) {
                 connection.disconnect();
             }
+            Log.i("VideoCache", "预加载结束: " + mPosition);
         }
     }
 
@@ -100,3 +111,4 @@ public class PreloadTask implements Runnable {
         }
     }
 }
+
