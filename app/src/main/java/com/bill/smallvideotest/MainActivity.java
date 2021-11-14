@@ -28,4 +28,9 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, SplitScreenActivity.class);
         startActivity(intent);
     }
+
+    public void handleCache(View view) {
+        Intent intent = new Intent(this, CacheTestActivity.class);
+        startActivity(intent);
+    }
 }

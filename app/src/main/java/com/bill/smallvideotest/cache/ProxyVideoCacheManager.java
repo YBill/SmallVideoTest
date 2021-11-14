@@ -23,6 +23,7 @@ public class ProxyVideoCacheManager {
                 .maxCacheSize(512 * 1024 * 1024)       // 512MB for cache
                 //缓存路径，不设置默认在sd_card/Android/data/[app_package_name]/cache中
 //                .cacheDirectory()
+                .fileNameGenerator(new MyFileNameGenerator())
                 .build();
     }
 
