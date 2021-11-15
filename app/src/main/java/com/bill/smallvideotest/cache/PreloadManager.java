@@ -3,7 +3,7 @@ package com.bill.smallvideotest.cache;
 import android.content.Context;
 import android.util.Log;
 
-import com.bill.videocache.HttpProxyCacheServer;
+import com.danikula.videocache.HttpProxyCacheServer;
 
 import java.io.File;
 import java.util.Iterator;

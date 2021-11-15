@@ -4,7 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.bill.smallvideotest.cache.MyFileNameGenerator;
-import com.bill.videocache.HttpProxyCacheServer;
+import com.danikula.videocache.HttpProxyCacheServer;
 
 /**
  * author ywb

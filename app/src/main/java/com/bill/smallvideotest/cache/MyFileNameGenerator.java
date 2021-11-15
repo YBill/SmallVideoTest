@@ -1,6 +1,7 @@
 package com.bill.smallvideotest.cache;
 
-import com.bill.videocache.file.FileNameGenerator;
+
+import com.danikula.videocache.file.FileNameGenerator;
 
 /**
  * Created by Bill on 2021/11/14.

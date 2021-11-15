@@ -2,8 +2,8 @@ package com.bill.smallvideotest.cache;
 
 import android.content.Context;
 
-import com.bill.videocache.HttpProxyCacheServer;
-import com.bill.videocache.StorageUtils;
+import com.danikula.videocache.HttpProxyCacheServer;
+import com.danikula.videocache.StorageUtils;
 
 import java.io.File;
 
