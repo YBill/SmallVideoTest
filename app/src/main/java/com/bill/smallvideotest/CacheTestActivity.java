@@ -11,9 +11,8 @@ import android.view.View;
 
 import com.bill.smallvideotest.cache.PreloadManager;
 import com.bill.smallvideotest.cache.ProxyVideoCacheManager;
-import com.bill.videocache.CacheListener;
-import com.bill.videocache.HttpProxyCacheServer;
 import com.bumptech.glide.Glide;
+import com.danikula.videocache.CacheListener;
 
 import java.io.File;
 import java.io.IOException;
