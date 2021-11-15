@@ -8,10 +8,16 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
+/**
+ * 原理：主动去请求AndroidVideoCache生成的代理地址，触发AndroidVideoCache缓存机制
+ * 缓存到 PreloadManager.PRELOAD_LENGTH 的数据之后停止请求，完成预加载播放器去播放
+ * AndroidVideoCache生成的代理地址的时候，AndroidVideoCache会直接返回缓存数据，从
+ * 而提升播放速度
+ */
 public class PreloadTask implements Runnable {
 
     /**
@@ -39,59 +45,7 @@ public class PreloadTask implements Runnable {
      */
     private boolean mIsExecuted;
 
-    private final static List<String> blackList = new ArrayList<>();
-
-    @Override
-    public void run() {
-        if (!mIsCanceled) {
-            start();
-        }
-        mIsExecuted = false;
-        mIsCanceled = false;
-    }
-
-    /**
-     * 开始预加载
-     */
-    private void start() {
-        // 如果在小黑屋里不加载
-        if (blackList.contains(mRawUrl)) return;
-        Log.i("VideoCache", "预加载开始：" + mPosition);
-        HttpURLConnection connection = null;
-        try {
-            //获取HttpProxyCacheServer的代理地址
-            String proxyUrl = mCacheServer.getProxyUrl(mRawUrl);
-            URL url = new URL(proxyUrl);
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setConnectTimeout(5_000);
-            connection.setReadTimeout(5_000);
-            InputStream in = new BufferedInputStream(connection.getInputStream());
-            int length;
-            int read = -1;
-            byte[] bytes = new byte[8 * 1024];
-            while ((length = in.read(bytes)) != -1) {
-                read += length;
-                //预加载完成或者取消预加载
-                if (mIsCanceled || read >= PreloadManager.PRELOAD_LENGTH) {
-                    if (mIsCanceled) {
-                        Log.i("VideoCache", "预加载取消：" + mPosition + " 读取数据：" + read + " Byte");
-                    } else {
-                        Log.i("VideoCache", "预加载成功：" + mPosition + " 读取数据：" + read + " Byte");
-                    }
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            Log.i("VideoCache", "预加载异常：" + mPosition + " 异常信息："+ e.getMessage());
-            // 关入小黑屋
-            blackList.add(mRawUrl);
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
-            }
-            Log.i("VideoCache", "预加载结束: " + mPosition);
-        }
-    }
+    private final static Map<String, Integer> blackMap = new HashMap<>();
 
     /**
      * 将预加载任务提交到线程池，准备执行
@@ -110,5 +64,74 @@ public class PreloadTask implements Runnable {
             mIsCanceled = true;
         }
     }
+
+    @Override
+    public void run() {
+        if (!mIsCanceled) {
+            start();
+        }
+        mIsExecuted = false;
+        mIsCanceled = false;
+    }
+
+    /**
+     * 开始预加载
+     */
+    private void start() {
+        if (isItABlacklist(mRawUrl)) return;
+        Log.i("VideoCache", "预加载开始：" + mPosition);
+        HttpURLConnection connection = null;
+        try {
+            String proxyUrl = mCacheServer.getProxyUrl(mRawUrl);
+            URL url = new URL(proxyUrl);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setConnectTimeout(5_000);
+            connection.setReadTimeout(5_000);
+            InputStream in = new BufferedInputStream(connection.getInputStream());
+            int length;
+            int read = -1;
+            byte[] bytes = new byte[8 * 1024];
+            while ((length = in.read(bytes)) != -1) {
+                read += length;
+                if (mIsCanceled || read >= PreloadManager.PRELOAD_LENGTH) {
+                    if (mIsCanceled) {
+                        Log.i("VideoCache", "预加载取消：" + mPosition + " 读取数据：" + read + " Byte");
+                    } else {
+                        Log.i("VideoCache", "预加载成功：" + mPosition + " 读取数据：" + read + " Byte");
+                    }
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            Log.i("VideoCache", "预加载异常：" + mPosition + " 异常信息：" + e.getMessage());
+            addToBlacklist(mRawUrl);
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+            Log.i("VideoCache", "预加载结束: " + mPosition);
+        }
+    }
+
+    private void addToBlacklist(String url) {
+        // 加入黑名单
+        Integer currentFailNum = blackMap.get(url);
+        if (currentFailNum == null) {
+            blackMap.put(url, 1);
+        } else {
+            blackMap.put(url, currentFailNum + 1);
+        }
+    }
+
+    private boolean isItABlacklist(String url) {
+        // 如果失败2次说明这个地址可能有问题，就不缓存了
+        Integer failNum = blackMap.get(url);
+        if (failNum != null && failNum > 1) {
+            Log.i("VideoCache", "拒绝此次预加载：" + mPosition);
+            return true;
+        }
+        return false;
+    }
+
 }
 

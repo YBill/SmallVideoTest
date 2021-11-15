@@ -3,9 +3,6 @@ package com.bill.smallvideotest;
 import android.app.Application;
 import android.content.Context;
 
-import com.bill.smallvideotest.cache.MyFileNameGenerator;
-import com.danikula.videocache.HttpProxyCacheServer;
-
 /**
  * author ywb
  * date 2021/11/10
@@ -14,8 +11,6 @@ import com.danikula.videocache.HttpProxyCacheServer;
 public class MyApplication extends Application {
 
     private static Context mContext;
-
-    private HttpProxyCacheServer proxy;
 
     @Override
     public void onCreate() {
@@ -27,14 +22,4 @@ public class MyApplication extends Application {
         return mContext;
     }
 
-    public static HttpProxyCacheServer getProxy(Context context) {
-        MyApplication app = (MyApplication) context.getApplicationContext();
-        return app.proxy == null ? (app.proxy = app.newProxy()) : app.proxy;
-    }
-
-    private HttpProxyCacheServer newProxy() {
-        return new HttpProxyCacheServer.Builder(this)
-                .fileNameGenerator(new MyFileNameGenerator())
-                .build();
-    }
 }

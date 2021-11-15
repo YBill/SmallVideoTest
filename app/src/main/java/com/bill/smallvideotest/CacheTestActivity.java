@@ -10,7 +10,7 @@ import android.view.TextureView;
 import android.view.View;
 
 import com.bill.smallvideotest.cache.PreloadManager;
-import com.bill.smallvideotest.cache.ProxyVideoCacheManager;
+import com.bill.smallvideotest.cache.ProxyCacheManager;
 import com.bumptech.glide.Glide;
 import com.danikula.videocache.CacheListener;
 
@@ -31,8 +31,6 @@ public class CacheTestActivity extends AppCompatActivity {
     private Surface mSurface;
 
     private MediaPlayer mPlayer;
-
-//    private HttpProxyCacheServer mProxy;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,10 +83,7 @@ public class CacheTestActivity extends AppCompatActivity {
             return false;
         });
 
-//        mProxy = MyApplication.getProxy(this);
-//        mProxy.registerCacheListener(listener, PATH);
-
-        ProxyVideoCacheManager.getProxy(this).registerCacheListener(listener, PATH);
+        ProxyCacheManager.getInstance().getProxy().registerCacheListener(listener, PATH);
     }
 
     private void showCover(AppCompatImageView imageView, String url) {
@@ -106,9 +101,8 @@ public class CacheTestActivity extends AppCompatActivity {
 
     public void handlePlay(View view) {
         try {
-            String proxyUrl = PreloadManager.getInstance(this).getPlayUrl(PATH);
+            String proxyUrl = PreloadManager.getInstance().getPlayUrl(PATH);
 
-//            String proxyUrl = mProxy.getProxyUrl(PATH);
             Log.e("Bill", "path = " + proxyUrl);
             mPlayer.setDataSource(proxyUrl);
         } catch (IOException e) {
@@ -129,7 +123,7 @@ public class CacheTestActivity extends AppCompatActivity {
 //        String proxyUrl = mProxy.getProxyUrl(PATH);
 //        Log.e("Bill", "path = " + proxyUrl);
 
-        PreloadManager.getInstance(this).addPreloadTask(PATH, 0);
+        PreloadManager.getInstance().addPreloadTask(PATH, 0);
     }
 
     public void handleClear(View view) {
@@ -144,7 +138,6 @@ public class CacheTestActivity extends AppCompatActivity {
             mPlayer.release();
             mPlayer = null;
         }
-//        mProxy.unregisterCacheListener(listener);
-        ProxyVideoCacheManager.getProxy(this).unregisterCacheListener(listener);
+        ProxyCacheManager.getInstance().getProxy().unregisterCacheListener(listener);
     }
 }
