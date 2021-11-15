@@ -15,7 +15,7 @@ import static android.os.Environment.MEDIA_MOUNTED;
  * @author Sergey Tarasevich (nostra13[at]gmail[dot]com)
  * @since 1.0.0
  */
-final class StorageUtils {
+public final class StorageUtils {
 
     private static final String INDIVIDUAL_DIR_NAME = "video-cache";
 
@@ -27,9 +27,35 @@ final class StorageUtils {
      * @param context Application context
      * @return Cache {@link File directory}
      */
-    public static File getIndividualCacheDirectory(Context context) {
-        File cacheDir = getCacheDirectory(context, true);
+    static File getIndividualCacheDirectory(Context context) {
+//        File cacheDir = getCacheDirectory(context, true);
+        File cacheDir = getCacheDirectory(context);
         return new File(cacheDir, INDIVIDUAL_DIR_NAME);
+    }
+
+    /**
+     * Returns application cache directory. Cache directory will be created on SD card
+     * <i>("/Android/data/[app_package_name]/cache")</i> (if card is mounted and app has appropriate permission) or
+     * on device's file system depending incoming parameters.
+     *
+     * @param context Application context
+     * @return Cache {@link File directory}.<br />
+     * <b>NOTE:</b> Can be null in some unpredictable cases (if SD card is unmounted and
+     * {@link android.content.Context#getCacheDir() Context.getCacheDir()} returns null).
+     */
+    private static File getCacheDirectory(Context context) {
+        File appCacheDir = null;
+        if (MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+            appCacheDir = context.getExternalCacheDir();
+        }
+        if (appCacheDir == null) {
+            appCacheDir = context.getCacheDir();
+        }
+        if (appCacheDir == null) {
+            String cacheDirPath = "/data/data/" + context.getPackageName() + "/cache/";
+            appCacheDir = new File(cacheDirPath);
+        }
+        return appCacheDir;
     }
 
     /**
@@ -75,5 +101,41 @@ final class StorageUtils {
             }
         }
         return appCacheDir;
+    }
+
+    /**
+     * delete directory
+     */
+    public static boolean deleteFiles(File root) {
+        File[] files = root.listFiles();
+        if (files == null)
+            return true;
+        for (File f : files) {
+            if (!f.isDirectory() && f.exists()) { // 判断是否存在
+                if (!f.delete()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * delete file
+     */
+    public static boolean deleteFile(String filePath) {
+        File file = new File(filePath);
+        if (!file.exists())
+            return true;
+        if (!file.isFile()) {
+            String[] filePaths = file.list();
+
+            if (filePaths != null) {
+                for (String path : filePaths) {
+                    deleteFile(filePath + File.separator + path);
+                }
+            }
+        }
+        return file.delete();
     }
 }

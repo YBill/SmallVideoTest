@@ -59,7 +59,7 @@ public class HttpProxyCacheServer {
     private final int port;
     private final Thread waitConnectionThread;
     private final Config config;
-    private final Pinger pinger;
+    /*private final Pinger pinger;*/
 
     public HttpProxyCacheServer(Context context) {
         this(new Builder(context).buildConfig());
@@ -76,8 +76,8 @@ public class HttpProxyCacheServer {
             this.waitConnectionThread = new Thread(new WaitRequestsRunnable(startSignal));
             this.waitConnectionThread.start();
             startSignal.await(); // freeze thread, wait for server starts
-            this.pinger = new Pinger(PROXY_HOST, port);
-            Logger.info("Proxy cache server started. Is it alive? " + isAlive());
+            /*this.pinger = new Pinger(PROXY_HOST, port);
+            Logger.info("Proxy cache server started. Is it alive? " + isAlive());*/
         } catch (IOException | InterruptedException e) {
             socketProcessor.shutdown();
             throw new IllegalStateException("Error starting local proxy server", e);
@@ -115,7 +115,8 @@ public class HttpProxyCacheServer {
             touchFileSafely(cacheFile);
             return Uri.fromFile(cacheFile).toString();
         }
-        return isAlive() ? appendToProxyUrl(url) : url;
+        /*return isAlive() ? appendToProxyUrl(url) : url;*/
+        return appendToProxyUrl(url);
     }
 
     public void registerCacheListener(CacheListener cacheListener, String url) {
@@ -177,18 +178,28 @@ public class HttpProxyCacheServer {
         }
     }
 
-    private boolean isAlive() {
+    /*private boolean isAlive() {
         return pinger.ping(3, 70);   // 70+140+280=max~500ms
-    }
+    }*/
 
     private String appendToProxyUrl(String url) {
         return String.format(Locale.US, "http://%s:%d/%s", PROXY_HOST, port, ProxyCacheUtils.encode(url));
     }
 
-    private File getCacheFile(String url) {
+    public File getCacheFile(String url) {
         File cacheDir = config.cacheRoot;
         String fileName = config.fileNameGenerator.generate(url);
         return new File(cacheDir, fileName);
+    }
+
+    public File getTempCacheFile(String url) {
+        File cacheDir = config.cacheRoot;
+        String fileName = config.fileNameGenerator.generate(url) + ".download";
+        return new File(cacheDir, fileName);
+    }
+
+    public File getCacheRoot() {
+        return config.cacheRoot;
     }
 
     private void touchFileSafely(File cacheFile) {
@@ -225,12 +236,14 @@ public class HttpProxyCacheServer {
             GetRequest request = GetRequest.read(socket.getInputStream());
             Logger.debug("Request to cache proxy:" + request);
             String url = ProxyCacheUtils.decode(request.uri);
-            if (pinger.isPingRequest(url)) {
+            HttpProxyCacheServerClients clients = getClients(url);
+            clients.processRequest(request, socket);
+            /*if (pinger.isPingRequest(url)) {
                 pinger.responseToPing(socket);
             } else {
                 HttpProxyCacheServerClients clients = getClients(url);
                 clients.processRequest(request, socket);
-            }
+            }*/
         } catch (SocketException e) {
             // There is no way to determine that client closed connection http://stackoverflow.com/a/10241044/999458
             // So just to prevent log flooding don't log stacktrace
