@@ -9,6 +9,10 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageView;
+
 import com.bill.smallvideotest.cache.PreloadManager;
 import com.bill.smallvideotest.cache.ProxyCacheManager;
 import com.bumptech.glide.Glide;
@@ -16,10 +20,6 @@ import com.danikula.videocache.CacheListener;
 
 import java.io.File;
 import java.io.IOException;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatImageView;
 
 public class CacheTestActivity extends AppCompatActivity {
 
@@ -93,8 +93,6 @@ public class CacheTestActivity extends AppCompatActivity {
     CacheListener listener = new CacheListener() {
         @Override
         public void onCacheAvailable(File cacheFile, String url, int percentsAvailable) {
-//            Log.d("Bill", "cacheFile = " + cacheFile.getAbsolutePath());
-//            Log.d("Bill", "url = " + url);
             Log.d("Bill", "percentsAvailable = " + percentsAvailable);
         }
     };
@@ -102,7 +100,6 @@ public class CacheTestActivity extends AppCompatActivity {
     public void handlePlay(View view) {
         try {
             String proxyUrl = PreloadManager.getInstance().getPlayUrl(PATH);
-
             Log.e("Bill", "path = " + proxyUrl);
             mPlayer.setDataSource(proxyUrl);
         } catch (IOException e) {
@@ -120,13 +117,13 @@ public class CacheTestActivity extends AppCompatActivity {
     public void handleLoad(View view) {
 //        boolean fullyCached = mProxy.isCached(PATH);
 //        Log.e("Bill", "fullyCached = " + fullyCached);
-//        String proxyUrl = mProxy.getProxyUrl(PATH);
-//        Log.e("Bill", "path = " + proxyUrl);
 
         PreloadManager.getInstance().addPreloadTask(PATH, 0);
     }
 
     public void handleClear(View view) {
+        boolean result = ProxyCacheManager.getInstance().clearAllCache();
+        Log.e("Bill", "result = " + result);
     }
 
     @Override

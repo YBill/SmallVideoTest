@@ -44,8 +44,8 @@ public class ProxyCacheManager {
      *
      * @return 返回缓存是否删除成功
      */
-    public boolean clearAllCache(Context context) {
-        return deleteFiles(proxyCacheServer.getCacheRoot());
+    public boolean clearAllCache() {
+        return deleteAll(proxyCacheServer.getCacheRoot());
     }
 
     /**
@@ -53,45 +53,28 @@ public class ProxyCacheManager {
      *
      * @return 返回缓存是否删除成功
      */
-    public boolean clearDefaultCache(Context context, String url) {
-        File pathTmp = proxyCacheServer.getTempCacheFile(url);
-        File path = proxyCacheServer.getCacheFile(url);
-        return deleteFile(pathTmp.getAbsolutePath()) &&
-                deleteFile(path.getAbsolutePath());
-
+    public boolean clearCache(String url) {
+        File cacheFile = proxyCacheServer.getCacheFile(url);
+        File cacheTempFile = proxyCacheServer.getTempCacheFile(url);
+        return deleteFile(cacheFile) && deleteFile(cacheTempFile);
     }
 
-    /**
-     * delete directory
-     */
-    public boolean deleteFiles(File root) {
-        File[] files = root.listFiles();
-        if (files == null)
+    private boolean deleteFile(File file) {
+        if (file == null || !file.exists())
             return true;
-        for (File f : files) {
-            if (!f.isDirectory() && f.exists()) { // 判断是否存在
-                if (!f.delete()) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return file.delete();
     }
 
-    /**
-     * delete file
-     */
-    public boolean deleteFile(String filePath) {
-        File file = new File(filePath);
-        if (!file.exists())
+    private boolean deleteAll(File file) {
+        if (file == null || !file.exists())
             return true;
         if (!file.isFile()) {
-            String[] filePaths = file.list();
-
-            if (filePaths != null) {
-                for (String path : filePaths) {
-                    deleteFile(filePath + File.separator + path);
-                }
+            String[] childFilePath = file.list();
+            if (childFilePath == null)
+                return true;
+            for (String path : childFilePath) {
+                File childFile = new File(file.getAbsoluteFile() + File.separator + path);
+                deleteAll(childFile);
             }
         }
         return file.delete();
