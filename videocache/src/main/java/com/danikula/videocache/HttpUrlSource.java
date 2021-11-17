@@ -1,5 +1,13 @@
 package com.danikula.videocache;
 
+import static com.danikula.videocache.Preconditions.checkNotNull;
+import static com.danikula.videocache.ProxyCacheUtils.DEFAULT_BUFFER_SIZE;
+import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
+import static java.net.HttpURLConnection.HTTP_MOVED_TEMP;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static java.net.HttpURLConnection.HTTP_PARTIAL;
+import static java.net.HttpURLConnection.HTTP_SEE_OTHER;
+
 import android.text.TextUtils;
 
 import com.danikula.videocache.headers.EmptyHeadersInjector;
@@ -14,14 +22,6 @@ import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
-
-import static com.danikula.videocache.Preconditions.checkNotNull;
-import static com.danikula.videocache.ProxyCacheUtils.DEFAULT_BUFFER_SIZE;
-import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
-import static java.net.HttpURLConnection.HTTP_MOVED_TEMP;
-import static java.net.HttpURLConnection.HTTP_OK;
-import static java.net.HttpURLConnection.HTTP_PARTIAL;
-import static java.net.HttpURLConnection.HTTP_SEE_OTHER;
 
 /**
  * {@link Source} that uses http resource as source for {@link ProxyCache}.
@@ -145,6 +145,37 @@ public class HttpUrlSource implements Source {
                 urlConnection.disconnect();
             }
         }
+    }
+
+    // for HEAD
+    private HttpURLConnection openConnectionForHeader(int timeout) throws IOException, ProxyCacheException {
+        HttpURLConnection connection;
+        boolean redirected;
+        int redirectCount = 0;
+        String url = this.sourceInfo.url;
+        do {
+            Logger.debug("Open connection for header to " + url);
+            connection = (HttpURLConnection) new URL(url).openConnection();
+            if (timeout > 0) {
+                connection.setConnectTimeout(timeout);
+                connection.setReadTimeout(timeout);
+            }
+            //只返回头部，不需要BODY，既可以提高响应速度也可以减少网络流量
+            connection.setRequestMethod("HEAD");
+            int code = connection.getResponseCode();
+            redirected = code == HTTP_MOVED_PERM || code == HTTP_MOVED_TEMP || code == HTTP_SEE_OTHER;
+            if (redirected) {
+                url = connection.getHeaderField("Location");
+                Logger.debug("Redirect to:" + url);
+                redirectCount++;
+                connection.disconnect();
+                Logger.debug("Redirect closed:" + url);
+            }
+            if (redirectCount > MAX_REDIRECTS) {
+                throw new ProxyCacheException("Too many redirects: " + redirectCount);
+            }
+        } while (redirected);
+        return connection;
     }
 
     private HttpURLConnection openConnection(long offset, int timeout) throws IOException, ProxyCacheException {
