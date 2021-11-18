@@ -37,7 +37,7 @@ public class PreloadManager {
     /**
      * 预加载的大小，每个视频预加载1M
      */
-    public static final int PRELOAD_LENGTH = 1024 * 1024;
+    public static final int PRELOAD_LENGTH = 2 * 1024 * 1024;
 
     public static class SingletonHolder {
         private static PreloadManager instance = new PreloadManager();

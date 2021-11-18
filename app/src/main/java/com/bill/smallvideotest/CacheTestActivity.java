@@ -23,7 +23,8 @@ import java.io.IOException;
 
 public class CacheTestActivity extends AppCompatActivity {
 
-    private final String PATH = "https://rmrbtest-image.peopleapp.com/upload/video/201809/1537349021125fcfb438615c1b.mp4";
+    //    private final String PATH = "https://rmrbtest-image.peopleapp.com/upload/video/201809/1537349021125fcfb438615c1b.mp4";
+    private final String PATH = "https://interactive-wallpaper-1252921383.cos.ap-beijing.myqcloud.com/online-earning/answer/video/video_v4/25617215fb4f0f49a41a44141c67e7f9.mp4";
 
 
     private AppCompatImageView coverIv;
@@ -31,6 +32,8 @@ public class CacheTestActivity extends AppCompatActivity {
     private Surface mSurface;
 
     private MediaPlayer mPlayer;
+
+    private long startPlayTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +71,9 @@ public class CacheTestActivity extends AppCompatActivity {
         mPlayer.setOnPreparedListener(mp -> {
             Log.d("Bill", "prepare = " + mp);
             mp.start();
+
+            long time = System.currentTimeMillis() - startPlayTime;
+            Log.i("Bill", "播放用时：" + time + "s");
         });
         mPlayer.setOnVideoSizeChangedListener((mp, width, height) -> {
             mTextureView.setVideoSize(width, height);
@@ -98,6 +104,7 @@ public class CacheTestActivity extends AppCompatActivity {
     };
 
     public void handlePlay(View view) {
+        startPlayTime = System.currentTimeMillis();
         try {
             String proxyUrl = PreloadManager.getInstance().getPlayUrl(PATH);
             Log.e("Bill", "path = " + proxyUrl);
