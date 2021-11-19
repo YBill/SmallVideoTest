@@ -1,6 +1,7 @@
 package com.bill.smallvideotest;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,8 +10,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bill.smallvideotest.cache.PreloadManager;
 import com.bumptech.glide.Glide;
+import com.danikula.videocache.CacheListener;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -82,4 +86,37 @@ public class SmallVideoListAdapter extends RecyclerView.Adapter<SmallVideoListAd
         }
     }
 
+    @Override
+    public void onViewAttachedToWindow(@NonNull VideoHolder holder) {
+        super.onViewAttachedToWindow(holder);
+        int position = holder.getAdapterPosition();
+        if (position - 5 >= 0) {
+            PreloadManager.getInstance().removePreloadTask(mDataList.get(position - 5).path);
+        }
+        if (position + 5 < getItemCount()) {
+            PreloadManager.getInstance().removePreloadTask(mDataList.get(position + 5).path);
+        }
+
+
+        int cacheNum = Math.min(position + 5, getItemCount());
+        for (int i = position; i < cacheNum; i++) {
+            PreloadManager.getInstance().addPreloadTask(mDataList.get(i).path, i);
+        }
+        cacheNum = Math.max(position - 2, 0);
+        for (int i = position - 1; i >= cacheNum; i--) {
+            PreloadManager.getInstance().addPreloadTask(mDataList.get(i).path, i);
+        }
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(@NonNull VideoHolder holder) {
+        super.onViewDetachedFromWindow(holder);
+    }
+
+    private CacheListener listener = new CacheListener() {
+        @Override
+        public void onCacheAvailable(File cacheFile, String url, int percentsAvailable) {
+            Log.i("Bill", url.substring(url.lastIndexOf("/")) + " = " + percentsAvailable);
+        }
+    };
 }

@@ -10,8 +10,14 @@
     <androidx.appcompat.widget.AppCompatButton
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="handleList"
-        android:text="List" />
+        android:onClick="handleRV"
+        android:text="RecyclerView" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="handleVP"
+        android:text="ViewPager" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:layout_width="match_parent"

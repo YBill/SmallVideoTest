@@ -58,10 +58,10 @@ public class PreloadManager {
      */
     public void addPreloadTask(String rawUrl, int position) {
         if (isPreloaded(rawUrl)) {
-            Log.i("VideoCache", "already preload : " + position);
+            Log.i("Bill", "already preload : " + position);
             return;
         }
-        Log.i("VideoCache", "addPreloadTask: " + position);
+        Log.i("Bill", "addPreloadTask: " + position);
         PreloadTask task = new PreloadTask();
         task.mRawUrl = rawUrl;
         task.mPosition = position;
@@ -111,7 +111,9 @@ public class PreloadManager {
      * @param isReverseScroll 列表是否反向滑动
      */
     public void pausePreload(int position, boolean isReverseScroll) {
-        Log.i("VideoCache", "pausePreload：" + position);
+        Log.i("Bill", "pausePreload：" + position);
+        if (!mIsStartPreload)
+            return;
         mIsStartPreload = false;
         for (Map.Entry<String, PreloadTask> next : mPreloadTasks.entrySet()) {
             PreloadTask task = next.getValue();
@@ -135,7 +137,9 @@ public class PreloadManager {
      * @param isReverseScroll 列表是否反向滑动
      */
     public void resumePreload(int position, boolean isReverseScroll) {
-        Log.i("VideoCache", "resumePreload：" + position);
+        Log.i("Bill", "resumePreload：" + position);
+        if (mIsStartPreload)
+            return;
         mIsStartPreload = true;
         for (Map.Entry<String, PreloadTask> next : mPreloadTasks.entrySet()) {
             PreloadTask task = next.getValue();

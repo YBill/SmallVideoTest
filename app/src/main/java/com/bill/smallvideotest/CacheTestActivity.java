@@ -24,7 +24,11 @@ import java.io.IOException;
 public class CacheTestActivity extends AppCompatActivity {
 
     //    private final String PATH = "https://rmrbtest-image.peopleapp.com/upload/video/201809/1537349021125fcfb438615c1b.mp4";
-    private final String PATH = "https://interactive-wallpaper-1252921383.cos.ap-beijing.myqcloud.com/online-earning/answer/video/video_v4/25617215fb4f0f49a41a44141c67e7f9.mp4";
+//    private final String PATH = "https://interactive-wallpaper-1252921383.cos.ap-beijing.myqcloud.com/online-earning/answer/video/video_v4/25617215fb4f0f49a41a44141c67e7f9.mp4";
+//    private final String PATH = "https://v26-web.douyinvod.com/ea696ca7517498b358bd2c2a513400b7/619623b6/video/tos/cn/tos-cn-ve-15-alinc2/810af64904de47c086a89bc7bfac1c93/?a=6383&br=2324&bt=2324&cd=0%7C0%7C0&ch=5&cr=3&cs=0&cv=1&dr=0&ds=3&er=&ft=OyFYlOZZI0J.17Tz7Th9D8FxuhsdrhhcHqY&l=202111181657430102100651650B097E40&lr=all&mime_type=video_mp4&net=0&pl=0&qs=0&rc=amU1cmc6ZjxsOTMzNGkzM0ApOjNmaWY2Mzw7Nzk3M2RkO2dtMjNhcjRnajBgLS1kLS9zczVeNjYtMzYvXmAwL2JjMzY6Yw%3D%3D&vl=&vr=";
+
+    private final String PATH = "https://interactive-wallpaper-1252921383.cos.ap-beijing.myqcloud.com/online-earning/answer/video/video_v4/38fa92f8dae47b1645aa35d7bb72e682.mp4";
+//    private final String PATH = "https://interactive-wallpaper-1252921383.cos.ap-beijing.myqcloud.com/online-earning/answer/test/test.mp4";
 
 
     private AppCompatImageView coverIv;
@@ -96,7 +100,7 @@ public class CacheTestActivity extends AppCompatActivity {
         Glide.with(this).load(url).into(imageView);
     }
 
-    CacheListener listener = new CacheListener() {
+    private CacheListener listener = new CacheListener() {
         @Override
         public void onCacheAvailable(File cacheFile, String url, int percentsAvailable) {
             Log.d("Bill", "percentsAvailable = " + percentsAvailable);

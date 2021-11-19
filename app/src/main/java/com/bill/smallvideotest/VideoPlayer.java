@@ -80,6 +80,12 @@ public class VideoPlayer extends RelativeLayout {
         this.mPlayListener = mPlayListener;
     }
 
+    public void reset() {
+        mRepeatNum = 1;
+        mCurrentProgress = mDuration = 0;
+        setProgress(0);
+    }
+
     /**
      * 获取缩略图
      **/
@@ -172,6 +178,7 @@ public class VideoPlayer extends RelativeLayout {
         Log.e("VideoPlayer", "release = " + mPath);
 
         if (mMediaPlayer != null) {
+            reset();
             try {
                 mMediaPlayer.stop();
             } catch (IllegalStateException e) {
@@ -402,7 +409,8 @@ public class VideoPlayer extends RelativeLayout {
     }
 
     private void setProgress(int progress) {
-        mPlayerProgressBar.setProgress(progress);
+        if (mPlayerProgressBar != null)
+            mPlayerProgressBar.setProgress(progress);
     }
 
     private void setLoadingProgress(int progress) {

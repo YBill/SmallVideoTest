@@ -79,7 +79,7 @@ public class PreloadTask implements Runnable {
      */
     private void start() {
         if (isItABlacklist(mRawUrl)) return;
-        Log.i("VideoCache", "预加载开始：" + mPosition);
+        Log.i("Bill", "预加载开始：" + mPosition);
         HttpURLConnection connection = null;
         try {
             String proxyUrl = mCacheServer.getProxyUrl(mRawUrl);
@@ -95,21 +95,22 @@ public class PreloadTask implements Runnable {
                 read += length;
                 if (mIsCanceled || read >= PreloadManager.PRELOAD_LENGTH) {
                     if (mIsCanceled) {
-                        Log.i("VideoCache", "预加载取消：" + mPosition + " 读取数据：" + read + " Byte");
+                        Log.i("Bill", "预加载取消：" + mPosition + " 读取数据：" + read + " Byte");
                     } else {
-                        Log.i("VideoCache", "预加载成功：" + mPosition + " 读取数据：" + read + " Byte");
+                        Log.i("Bill", "预加载成功：" + mPosition + " 读取数据：" + read + " Byte");
+                        PreloadManager.getInstance().removePreloadTask(mRawUrl);
                     }
                     break;
                 }
             }
         } catch (Exception e) {
-            Log.i("VideoCache", "预加载异常：" + mPosition + " 异常信息：" + e.getMessage());
+            Log.i("Bill", "预加载异常：" + mPosition + " 异常信息：" + e.getMessage());
             addToBlacklist(mRawUrl);
         } finally {
             if (connection != null) {
                 connection.disconnect();
             }
-            Log.i("VideoCache", "预加载结束: " + mPosition);
+            Log.i("Bill", "预加载结束: " + mPosition);
         }
     }
 
@@ -127,7 +128,7 @@ public class PreloadTask implements Runnable {
         // 如果失败2次说明这个地址可能有问题，就不缓存了
         Integer failNum = blackMap.get(url);
         if (failNum != null && failNum > 1) {
-            Log.i("VideoCache", "拒绝此次预加载：" + mPosition);
+            Log.i("Bill", "拒绝此次预加载：" + mPosition);
             return true;
         }
         return false;

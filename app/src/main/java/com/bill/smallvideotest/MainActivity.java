@@ -19,9 +19,16 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public void handleList(View view) {
+    public void handleRV(View view) {
         Intent intent = new Intent(this, SmallVideoListAct.class);
+        intent.putExtra("type", "rv");
         startActivity(intent);
+    }
+
+    public void handleVP(View view) {
+//        Intent intent = new Intent(this, SmallVideoListAct.class);
+//        intent.putExtra("type", "vp");
+//        startActivity(intent);
     }
 
     public void handleSplitScreen(View view) {

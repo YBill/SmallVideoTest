@@ -9,7 +9,11 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
+
+import com.bill.smallvideotest.cache.PreloadManager;
+import com.bill.smallvideotest.cache.ProxyCacheManager;
+import com.bill.smallvideotest.widget.VerticalViewPager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +23,9 @@ import java.util.List;
  * date 2021/10/20
  * desc
  */
-public class SmallVideoFragment extends Fragment {
+public class SmallVideoFragment2 extends Fragment {
 
-    public static final String TAG = "SmallVideoFragment";
+    public static final String TAG = "SmallVideoFragment2";
 
     /*private static final String[] PATHS = new String[]{
             "http://kw-static.cognizepower.com/content/mp4/f3523b69a913c9ab25646708266058db.mp4",
@@ -67,38 +71,65 @@ public class SmallVideoFragment extends Fragment {
             "https://interactive-wallpaper-1252921383.cos.ap-beijing.myqcloud.com/online-earning/answer/video/video_v4/4c3f1e8b04f7748bfec5e229fb0d53c6.mp4"
     };
 
-    private RecyclerView mVideoRv;
-    private SmallVideoListAdapter mAdapter;
-    private PlayerHelper mPlayerHelper;
+    private VerticalViewPager mViewPager;
+    private SmallVideoAdapter2 mAdapter;
+    private SmallVideoAdapter2.ViewHolder mCurHolder;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_small_video, container, false);
+        View view = inflater.inflate(R.layout.fragment_small_video_2, container, false);
         initViews(view);
         configViews();
         return view;
     }
 
     private void initViews(View view) {
-        mVideoRv = view.findViewById(R.id.rv_video);
+        mViewPager = view.findViewById(R.id.rv_video);
     }
 
     private void configViews() {
-        mVideoRv.setLayoutManager(new VideoLayoutManager(getActivity()));
-        mAdapter = new SmallVideoListAdapter(getActivity());
+        mViewPager.setOffscreenPageLimit(4);
+        mAdapter = new SmallVideoAdapter2(getActivity());
+        mViewPager.setAdapter(mAdapter);
         mAdapter.setDataList(getData());
-        mVideoRv.setAdapter(mAdapter);
+        mViewPager.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
-        mPlayerHelper = new PlayerHelper(getActivity(), mVideoRv);
-        this.getLifecycle().addObserver(mPlayerHelper);
-        mPlayerHelper.setOnPreLoadListener(new PlayerHelper.OnPreLoadListener() {
+            private int mCurrentPosition = -1;
+
             @Override
-            public void onLoad() {
-//                Log.e("Bill", "开始预加载数据");
-//                mAdapter.addDataList(getData());
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (mCurrentPosition == position) return;
+                playerVideo(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                if (state == VerticalViewPager.SCROLL_STATE_DRAGGING) {
+                    mCurrentPosition = mViewPager.getCurrentItem();
+                }
             }
         });
+    }
+
+    private void playerVideo(int position) {
+        if (mCurHolder != null) {
+            mCurHolder.mThumbIv.setVisibility(View.VISIBLE);
+            mCurHolder.mVideoPlayer.release();
+        }
+        mCurHolder = null;
+
+        View view = mViewPager.getChildAt(position);
+        mCurHolder = (SmallVideoAdapter2.ViewHolder) view.getTag();
+        String proxyPath = PreloadManager.getInstance().getPlayUrl(mAdapter.getDataList().get(position).path);
+        Log.e("Bill", position + "播放 = " + proxyPath);
+        mCurHolder.mVideoPlayer.setVideoPath(proxyPath);
     }
 
     private List<SmallVideoBean> getData() {
@@ -115,5 +146,7 @@ public class SmallVideoFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        PreloadManager.getInstance().removeAllPreloadTask();
+        ProxyCacheManager.getInstance().clearAllCache(); // TODO
     }
 }

@@ -1,6 +1,7 @@
 package com.bill.smallvideotest;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 
 import androidx.lifecycle.Lifecycle;
@@ -8,6 +9,9 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bill.smallvideotest.cache.PreloadManager;
+import com.bill.smallvideotest.cache.ProxyCacheManager;
 
 /**
  * author ywb
@@ -38,7 +42,7 @@ public class PlayerHelper implements LifecycleObserver {
             }
 
             @Override
-            public void onPageSelected(int position, boolean isBottom) {
+            public void onPageSelected(int position, int total) {
                 if (mCurrentPosition == position) return;
                 playerVideo();
             }
@@ -85,7 +89,10 @@ public class PlayerHelper implements LifecycleObserver {
     private void startCurVideoView() {
         if (mCurHolder == null) return;
         if (!mCurHolder.mVideoPlayer.isPlaying()) {
-            mCurHolder.mVideoPlayer.setVideoPath(mCurHolder.mData.path);
+            String proxyUrl = PreloadManager.getInstance().getPlayUrl(mCurHolder.mData.path);
+//            Log.d("Bill", "proxyUrl = " + proxyUrl);
+            Log.i("Bill", "mCurrentPosition = " + mCurrentPosition);
+            mCurHolder.mVideoPlayer.setVideoPath(proxyUrl);
         }
     }
 
@@ -111,7 +118,8 @@ public class PlayerHelper implements LifecycleObserver {
             mCurHolder.releaseCurrentView();
             mCurHolder.mVideoPlayer.release();
         } else if (event == Lifecycle.Event.ON_DESTROY) {
-
+            PreloadManager.getInstance().removeAllPreloadTask();
+            ProxyCacheManager.getInstance().clearAllCache(); // TODO
         }
 
     }

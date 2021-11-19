@@ -55,7 +55,7 @@ public class VideoLayoutManager extends LinearLayoutManager implements RecyclerV
                     position = getPosition(snapView);
                 }
                 if (mOnViewPagerListener != null) {
-                    mOnViewPagerListener.onPageSelected(position, position == getItemCount() - 1);
+                    mOnViewPagerListener.onPageSelected(position, getItemCount());
                 }
                 if (position == getItemCount() - 2 && mOnViewPagerListener != null) {
                     mOnViewPagerListener.preLoad();
@@ -84,7 +84,7 @@ public class VideoLayoutManager extends LinearLayoutManager implements RecyclerV
     public void onChildViewAttachedToWindow(@NonNull View view) {
         if (getChildCount() == 1 && getPosition(view) == 0) {
             if (mOnViewPagerListener != null)
-                mOnViewPagerListener.onPageSelected(getPosition(view), false);
+                mOnViewPagerListener.onPageSelected(getPosition(view), getItemCount());
         }
     }
 

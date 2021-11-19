@@ -9,7 +9,7 @@ public interface OnViewPagerListener {
 
     void onPageRelease(int position);
 
-    void onPageSelected(int position, boolean isBottom);
+    void onPageSelected(int position, int total);
 
     void preLoad();
 
