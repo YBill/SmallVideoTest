@@ -274,7 +274,7 @@ public class VideoPlayer extends RelativeLayout {
 
             @Override
             public void onBufferingUpdate(int percent) {
-                setLoadingProgress(percent);
+                setLoadingProgress(percent >= 95 ? 100 : percent);
             }
 
             @Override
@@ -341,7 +341,6 @@ public class VideoPlayer extends RelativeLayout {
         mMediaPlayer.setDataSource(mPath);
         if (mSurface != null) {
             mMediaPlayer.setSurface(mSurface);
-//            mMediaPlayer.setScreenOnWhilePlaying(true);
         }
         try {
             mMediaPlayer.prepareAsync();
