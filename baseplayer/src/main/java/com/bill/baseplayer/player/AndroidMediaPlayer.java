@@ -1,10 +1,15 @@
 package com.bill.baseplayer.player;
 
+import android.content.Context;
+import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.view.Surface;
 import android.view.SurfaceHolder;
+
+import java.util.Map;
 
 /**
  * author ywb
@@ -16,9 +21,14 @@ public class AndroidMediaPlayer extends AbstractPlayer implements MediaPlayer.On
         MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnPreparedListener,
         MediaPlayer.OnVideoSizeChangedListener {
 
+    private Context mContext;
     protected MediaPlayer mMediaPlayer;
     private int mBufferedPercent;
     private boolean mIsPreparing;
+
+    public AndroidMediaPlayer(Context context) {
+        mContext = context.getApplicationContext();
+    }
 
     @Override
     public void initPlayer() {
@@ -43,13 +53,24 @@ public class AndroidMediaPlayer extends AbstractPlayer implements MediaPlayer.On
     }
 
     @Override
-    public void setDataSource(String path) {
+    public void setDataSource(String path, Map<String, String> headers) {
         if (!isAvailable())
             return;
         try {
-            mMediaPlayer.setDataSource(path);
+            mMediaPlayer.setDataSource(mContext, Uri.parse(path), headers);
         } catch (Exception e) {
-            e.printStackTrace();
+            if (mPlayerEventListener != null)
+                mPlayerEventListener.onError();
+        }
+    }
+
+    @Override
+    public void setDataSource(AssetFileDescriptor fd) {
+        if (!isAvailable())
+            return;
+        try {
+            mMediaPlayer.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
+        } catch (Exception e) {
             if (mPlayerEventListener != null)
                 mPlayerEventListener.onError();
         }

@@ -1,7 +1,10 @@
 package com.bill.baseplayer.player;
 
+import android.content.res.AssetFileDescriptor;
 import android.view.Surface;
 import android.view.SurfaceHolder;
+
+import java.util.Map;
 
 /**
  * author ywb
@@ -43,9 +46,15 @@ public abstract class AbstractPlayer {
     /**
      * 设置播放地址
      *
-     * @param path 播放地址
+     * @param path    播放地址
+     * @param headers 播放地址请求头
      */
-    public abstract void setDataSource(String path);
+    public abstract void setDataSource(String path, Map<String, String> headers);
+
+    /**
+     * 用于播放raw和asset里面的视频文件
+     */
+    public abstract void setDataSource(AssetFileDescriptor fd);
 
     /**
      * 播放

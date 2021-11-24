@@ -1,5 +1,7 @@
 package com.bill.baseplayer.player;
 
+import android.content.Context;
+
 /**
  * author ywb
  * date 2021/11/24
@@ -12,7 +14,7 @@ public class AndroidMediaPlayerFactory extends PlayerFactory<AndroidMediaPlayer>
     }
 
     @Override
-    public AndroidMediaPlayer createPlayer() {
-        return new AndroidMediaPlayer();
+    public AndroidMediaPlayer createPlayer(Context context) {
+        return new AndroidMediaPlayer(context);
     }
 }
