@@ -37,7 +37,7 @@ public class PreloadManager {
     /**
      * 预加载的大小，每个视频预加载1M
      */
-    public static final int PRELOAD_LENGTH = 2 * 1024 * 1024;
+    private static final int PRELOAD_LENGTH = 1 * 1024 * 1024;
 
     public static class SingletonHolder {
         private static PreloadManager instance = new PreloadManager();
@@ -48,28 +48,30 @@ public class PreloadManager {
     }
 
     private PreloadManager() {
-        mHttpProxyCacheServer = ProxyCacheManager.getInstance().getProxy();
+        mHttpProxyCacheServer = VideoCacheManager.getInstance().getProxy();
     }
 
     /**
      * 开始预加载
      *
-     * @param rawUrl 原始视频地址
+     * @param rawUrl   原始视频地址
+     * @param position 视频位置
+     * @param isLoad   是否立即加载
      */
-    public void addPreloadTask(String rawUrl, int position) {
+    public void addPreloadTask(String rawUrl, int position, boolean isLoad) {
         if (isPreloaded(rawUrl)) {
-            Log.i("Bill", "already preload : " + position);
+            Log.i("Bill", "已经预加载完成 : " + position);
             return;
         }
-        Log.i("Bill", "addPreloadTask: " + position);
+        Log.i("Bill", "添加到待加载队列: " + position);
         PreloadTask task = new PreloadTask();
         task.mRawUrl = rawUrl;
         task.mPosition = position;
+        task.mPreloadLength = PRELOAD_LENGTH;
         task.mCacheServer = mHttpProxyCacheServer;
         mPreloadTasks.put(rawUrl, task);
 
-        if (mIsStartPreload) {
-            //开始预加载
+        if (isLoad) {
             task.executeOn(mExecutorService);
         }
     }
@@ -104,58 +106,67 @@ public class PreloadManager {
     }
 
     /**
-     * 暂停预加载
-     * 根据是否反向滑动取消在position之下或之上的PreloadTask
+     * 恢复加载
      *
-     * @param position        当前滑到的位置
-     * @param isReverseScroll 列表是否反向滑动
-     */
-    public void pausePreload(int position, boolean isReverseScroll) {
-        Log.i("Bill", "pausePreload：" + position);
-        if (!mIsStartPreload)
-            return;
-        mIsStartPreload = false;
-        for (Map.Entry<String, PreloadTask> next : mPreloadTasks.entrySet()) {
-            PreloadTask task = next.getValue();
-            if (isReverseScroll) {
-                if (task.mPosition >= position) {
-                    task.cancel();
-                }
-            } else {
-                if (task.mPosition <= position) {
-                    task.cancel();
-                }
-            }
-        }
-    }
-
-    /**
-     * 恢复预加载
-     * 根据是否反向滑动开始在position之下或之上的PreloadTask
-     *
-     * @param position        当前滑到的位置
-     * @param isReverseScroll 列表是否反向滑动
+     * @param position        当前位置
+     * @param isReverseScroll 是否反向滑动
      */
     public void resumePreload(int position, boolean isReverseScroll) {
-        Log.i("Bill", "resumePreload：" + position);
         if (mIsStartPreload)
             return;
         mIsStartPreload = true;
+
         for (Map.Entry<String, PreloadTask> next : mPreloadTasks.entrySet()) {
             PreloadTask task = next.getValue();
             if (isReverseScroll) {
                 if (task.mPosition < position) {
                     if (!isPreloaded(task.mRawUrl)) {
+                        Log.i("Bill", "恢复预加载，反向滑动 position：" + task.mPosition);
                         task.executeOn(mExecutorService);
                     }
                 }
             } else {
                 if (task.mPosition > position) {
                     if (!isPreloaded(task.mRawUrl)) {
+                        Log.i("Bill", "恢复预加载，正向滑动 position：" + task.mPosition);
                         task.executeOn(mExecutorService);
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * 取消加载
+     */
+    public void pausePreload() {
+        if (!mIsStartPreload)
+            return;
+        mIsStartPreload = false;
+
+        for (Map.Entry<String, PreloadTask> next : mPreloadTasks.entrySet()) {
+            PreloadTask task = next.getValue();
+            if (!isPreloaded(task.mRawUrl)) {
+                Log.i("Bill", "取消预加载：" + task.mPosition);
+                task.cancel();
+            }
+        }
+    }
+
+    /**
+     * 删除范围外的任务和磁盘数据
+     */
+    public void removePreloadTaskAndDiskOutOfRange(int startSafePos, int endSafePos) {
+        Iterator<Map.Entry<String, PreloadTask>> iterator = mPreloadTasks.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, PreloadTask> next = iterator.next();
+            PreloadTask task = next.getValue();
+            if (task.mPosition >= startSafePos && task.mPosition <= endSafePos)
+                continue;
+            Log.i("Bill", "删除本地文件 position = " + task.mPosition);
+            task.cancel();
+            iterator.remove();
+            VideoCacheManager.getInstance().clearCache(task.mRawUrl);
         }
     }
 

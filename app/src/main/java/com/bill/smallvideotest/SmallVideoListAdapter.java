@@ -1,7 +1,6 @@
 package com.bill.smallvideotest;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,9 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bill.smallvideotest.cache.PreloadManager;
 import com.bumptech.glide.Glide;
-import com.danikula.videocache.CacheListener;
 
-import java.io.File;
 import java.util.List;
 
 /**
@@ -22,10 +19,9 @@ import java.util.List;
  * date 2021/10/20
  * desc
  */
-public class SmallVideoListAdapter extends RecyclerView.Adapter<SmallVideoListAdapter.VideoHolder> {
+public class SmallVideoListAdapter extends BaseVideoAnswerAdapter {
 
     private Context mContext;
-    private List<SmallVideoBean> mDataList;
 
     public SmallVideoListAdapter(Context context) {
         mContext = context;
@@ -55,8 +51,8 @@ public class SmallVideoListAdapter extends RecyclerView.Adapter<SmallVideoListAd
     }
 
     @Override
-    public void onBindViewHolder(@NonNull VideoHolder holder, int position) {
-        holder.update(position);
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        ((VideoHolder) holder).update(position);
     }
 
     @Override
@@ -79,44 +75,22 @@ public class SmallVideoListAdapter extends RecyclerView.Adapter<SmallVideoListAd
         private void update(int position) {
             mData = mDataList.get(position);
             Glide.with(mContext).load(mData.image).into(mThumbIv);
+
+            mVideoPlayer.setPlayListener(new VideoPlayer.OnPlayListener() {
+                @Override
+                public void repeatNum(int repeatNum) {
+
+                }
+
+                @Override
+                public void prepareFinish(int position, boolean isReverseScroll) {
+                    PreloadManager.getInstance().resumePreload(position, isReverseScroll);
+                }
+            });
         }
 
         public void releaseCurrentView() {
             mThumbIv.setVisibility(View.VISIBLE);
         }
     }
-
-    @Override
-    public void onViewAttachedToWindow(@NonNull VideoHolder holder) {
-        super.onViewAttachedToWindow(holder);
-        int position = holder.getAdapterPosition();
-        if (position - 5 >= 0) {
-            PreloadManager.getInstance().removePreloadTask(mDataList.get(position - 5).path);
-        }
-        if (position + 5 < getItemCount()) {
-            PreloadManager.getInstance().removePreloadTask(mDataList.get(position + 5).path);
-        }
-
-
-        int cacheNum = Math.min(position + 5, getItemCount());
-        for (int i = position; i < cacheNum; i++) {
-            PreloadManager.getInstance().addPreloadTask(mDataList.get(i).path, i);
-        }
-        cacheNum = Math.max(position - 2, 0);
-        for (int i = position - 1; i >= cacheNum; i--) {
-            PreloadManager.getInstance().addPreloadTask(mDataList.get(i).path, i);
-        }
-    }
-
-    @Override
-    public void onViewDetachedFromWindow(@NonNull VideoHolder holder) {
-        super.onViewDetachedFromWindow(holder);
-    }
-
-    private CacheListener listener = new CacheListener() {
-        @Override
-        public void onCacheAvailable(File cacheFile, String url, int percentsAvailable) {
-            Log.i("Bill", url.substring(url.lastIndexOf("/")) + " = " + percentsAvailable);
-        }
-    };
 }

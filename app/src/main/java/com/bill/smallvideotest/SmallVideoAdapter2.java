@@ -73,7 +73,7 @@ public class SmallVideoAdapter2 extends PagerAdapter {
 
         String url = mData.path;
         Log.e("Bill", "开始预加载 = " + position);
-        PreloadManager.getInstance().addPreloadTask(url, position);
+//        PreloadManager.getInstance().addPreloadTask(url, position);
 
         container.addView(view);
         return view;

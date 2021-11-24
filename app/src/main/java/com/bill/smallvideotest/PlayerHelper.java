@@ -11,7 +11,7 @@ import androidx.lifecycle.OnLifecycleEvent;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bill.smallvideotest.cache.PreloadManager;
-import com.bill.smallvideotest.cache.ProxyCacheManager;
+import com.bill.smallvideotest.cache.VideoCacheManager;
 
 /**
  * author ywb
@@ -60,12 +60,14 @@ public class PlayerHelper implements LifecycleObserver {
         int visibleItemPosition = mLayoutManager.findLastCompletelyVisibleItemPosition();
         if (visibleItemPosition >= 0 && mCurrentPosition != visibleItemPosition) {
             stopCurVideoView(); //停止上一个视频
+            boolean isReverseScroll = mCurrentPosition > visibleItemPosition; // 是否反向滑动
             mCurrentPosition = visibleItemPosition;
             mCurHolder = null;
+            PreloadManager.getInstance().pausePreload();
             View holderView = mLayoutManager.findViewByPosition(mCurrentPosition);
             if (holderView != null) {
                 mCurHolder = (SmallVideoListAdapter.VideoHolder) mRecyclerView.getChildViewHolder(holderView);
-                startCurVideoView(); //开始播放视频
+                startCurVideoView(isReverseScroll); //开始播放视频
             }
         }
     }
@@ -86,13 +88,12 @@ public class PlayerHelper implements LifecycleObserver {
         }
     }
 
-    private void startCurVideoView() {
+    private void startCurVideoView(boolean isReverseScroll) {
         if (mCurHolder == null) return;
         if (!mCurHolder.mVideoPlayer.isPlaying()) {
             String proxyUrl = PreloadManager.getInstance().getPlayUrl(mCurHolder.mData.path);
-//            Log.d("Bill", "proxyUrl = " + proxyUrl);
-            Log.i("Bill", "mCurrentPosition = " + mCurrentPosition);
-            mCurHolder.mVideoPlayer.setVideoPath(proxyUrl);
+            Log.e("Bill", "当前正在播放 position = " + mCurrentPosition + "，url  = " + proxyUrl);
+            mCurHolder.mVideoPlayer.setVideoPath(proxyUrl, mCurrentPosition, isReverseScroll);
         }
     }
 
@@ -106,20 +107,27 @@ public class PlayerHelper implements LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_ANY)
     void onLifecycleReceived(LifecycleOwner source, Lifecycle.Event event) {
-        if (mCurHolder == null) {
-            return;
-        }
 
         if (event == Lifecycle.Event.ON_RESUME) {
-            mCurHolder.mVideoPlayer.play();
+            if (mCurHolder != null)
+                mCurHolder.mVideoPlayer.play();
+
         } else if (event == Lifecycle.Event.ON_PAUSE) {
-            mCurHolder.mVideoPlayer.pause();
+            if (mCurHolder != null)
+                mCurHolder.mVideoPlayer.pause();
         } else if (event == Lifecycle.Event.ON_STOP) {
-            mCurHolder.releaseCurrentView();
-            mCurHolder.mVideoPlayer.release();
+            if (mCurHolder != null) {
+                mCurHolder.releaseCurrentView();
+                mCurHolder.mVideoPlayer.release();
+            }
         } else if (event == Lifecycle.Event.ON_DESTROY) {
+            Log.d("Bill", "清空缓存");
             PreloadManager.getInstance().removeAllPreloadTask();
-            ProxyCacheManager.getInstance().clearAllCache(); // TODO
+            VideoCacheManager.getInstance().clearAllCache();
+        } else if (event == Lifecycle.Event.ON_CREATE) {
+            Log.d("Bill", "清空缓存");
+            PreloadManager.getInstance().removeAllPreloadTask();
+            VideoCacheManager.getInstance().clearAllCache();
         }
 
     }

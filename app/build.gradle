@@ -40,4 +40,7 @@ dependencies {
 
 //    implementation 'com.danikula:videocache:2.7.1'
 
+    implementation 'tv.danmaku.ijk.media:ijkplayer-java:0.8.8'
+//    implementation 'com.google.android.exoplayer:exoplayer-core:2.16.1'
+
 }

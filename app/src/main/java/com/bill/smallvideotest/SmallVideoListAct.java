@@ -2,6 +2,8 @@ package com.bill.smallvideotest;
 
 import android.os.Bundle;
 
+import tv.danmaku.ijk.media.player.IjkMediaPlayer;
+
 public class SmallVideoListAct extends BaseActivity {
 
     @Override
@@ -9,6 +11,9 @@ public class SmallVideoListAct extends BaseActivity {
         super.onCreate(savedInstanceState);
         setTranslucentStatus(getWindow(), true);
         setContentView(R.layout.activity_small_video_list);
+
+        IjkMediaPlayer.loadLibrariesOnce(null);
+        IjkMediaPlayer.native_profileBegin("libijkplayer.so");
 
         String type = getIntent().getStringExtra("type");
 
@@ -26,4 +31,9 @@ public class SmallVideoListAct extends BaseActivity {
 
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        IjkMediaPlayer.native_profileEnd();
+    }
 }

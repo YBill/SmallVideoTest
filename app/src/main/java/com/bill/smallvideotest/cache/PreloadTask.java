@@ -31,6 +31,11 @@ public class PreloadTask implements Runnable {
     public int mPosition;
 
     /**
+     * 预加载大小
+     */
+    public long mPreloadLength = -1;
+
+    /**
      * VideoCache服务器
      */
     public HttpProxyCacheServer mCacheServer;
@@ -78,7 +83,7 @@ public class PreloadTask implements Runnable {
      * 开始预加载
      */
     private void start() {
-        if (isItABlacklist(mRawUrl)) return;
+//        if (isItABlacklist(mRawUrl)) return;
         Log.i("Bill", "预加载开始：" + mPosition);
         HttpURLConnection connection = null;
         try {
@@ -91,18 +96,21 @@ public class PreloadTask implements Runnable {
             int length;
             int read = -1;
             byte[] bytes = new byte[8 * 1024];
+            boolean isLoadAll = true;
             while ((length = in.read(bytes)) != -1) {
                 read += length;
-                if (mIsCanceled || read >= PreloadManager.PRELOAD_LENGTH) {
+                if (mIsCanceled || (mPreloadLength >= 0 && read >= mPreloadLength)) {
                     if (mIsCanceled) {
                         Log.i("Bill", "预加载取消：" + mPosition + " 读取数据：" + read + " Byte");
                     } else {
                         Log.i("Bill", "预加载成功：" + mPosition + " 读取数据：" + read + " Byte");
-                        PreloadManager.getInstance().removePreloadTask(mRawUrl);
                     }
+                    isLoadAll = false;
                     break;
                 }
             }
+            if (isLoadAll)
+                Log.i("Bill", "此文件下载全部下载：" + mPosition);
         } catch (Exception e) {
             Log.i("Bill", "预加载异常：" + mPosition + " 异常信息：" + e.getMessage());
             addToBlacklist(mRawUrl);

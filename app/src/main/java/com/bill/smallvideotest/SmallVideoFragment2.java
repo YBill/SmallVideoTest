@@ -12,7 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
 import com.bill.smallvideotest.cache.PreloadManager;
-import com.bill.smallvideotest.cache.ProxyCacheManager;
+import com.bill.smallvideotest.cache.VideoCacheManager;
 import com.bill.smallvideotest.widget.VerticalViewPager;
 
 import java.util.ArrayList;
@@ -147,6 +147,6 @@ public class SmallVideoFragment2 extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         PreloadManager.getInstance().removeAllPreloadTask();
-        ProxyCacheManager.getInstance().clearAllCache(); // TODO
+        VideoCacheManager.getInstance().clearAllCache(); // TODO
     }
 }

@@ -14,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageView;
 
 import com.bill.smallvideotest.cache.PreloadManager;
-import com.bill.smallvideotest.cache.ProxyCacheManager;
+import com.bill.smallvideotest.cache.VideoCacheManager;
 import com.bumptech.glide.Glide;
 import com.danikula.videocache.CacheListener;
 
@@ -93,7 +93,7 @@ public class CacheTestActivity extends AppCompatActivity {
             return false;
         });
 
-        ProxyCacheManager.getInstance().getProxy().registerCacheListener(listener, PATH);
+        VideoCacheManager.getInstance().getProxy().registerCacheListener(listener, PATH);
     }
 
     private void showCover(AppCompatImageView imageView, String url) {
@@ -129,11 +129,11 @@ public class CacheTestActivity extends AppCompatActivity {
 //        boolean fullyCached = mProxy.isCached(PATH);
 //        Log.e("Bill", "fullyCached = " + fullyCached);
 
-        PreloadManager.getInstance().addPreloadTask(PATH, 0);
+        PreloadManager.getInstance().addPreloadTask(PATH, 0, true);
     }
 
     public void handleClear(View view) {
-        boolean result = ProxyCacheManager.getInstance().clearAllCache();
+        boolean result = VideoCacheManager.getInstance().clearAllCache();
         Log.e("Bill", "result = " + result);
     }
 
@@ -146,6 +146,6 @@ public class CacheTestActivity extends AppCompatActivity {
             mPlayer.release();
             mPlayer = null;
         }
-        ProxyCacheManager.getInstance().getProxy().unregisterCacheListener(listener);
+        VideoCacheManager.getInstance().getProxy().unregisterCacheListener(listener);
     }
 }

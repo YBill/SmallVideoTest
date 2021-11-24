@@ -4,9 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.SurfaceTexture;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.TimedText;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -21,7 +18,9 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
 
-import java.io.IOException;
+import com.bill.smallvideotest.player.AbstractPlayer;
+import com.bill.smallvideotest.player.AndroidMediaPlayerFactory;
+import com.bill.smallvideotest.player.IjkPlayerFactory;
 
 /**
  * author ywb
@@ -49,11 +48,13 @@ public class VideoPlayer extends RelativeLayout {
     private AppCompatImageView mThumbIv;
     private VideoTextureView mTextureView; // 渲染器使用TextureView
     private Surface mSurface;
-    private MediaPlayer mMediaPlayer; // 播放器使用MediaPlayer
+    private AbstractPlayer mMediaPlayer; // 解码器
 
     private int mPlayerState = STATE_NOT_START;
     private PlayerStateSyncThread mPlayerStateSyncThread;
     private String mPath;
+    private int mListPosition; // 列表位置，为了更好地预加载
+    private boolean mListReverseScroll; // 列表滑动方向，为了更好地预加载
     private long mCurrentProgress = 0;
     private long mDuration = 0;
 
@@ -110,7 +111,16 @@ public class VideoPlayer extends RelativeLayout {
      * 设置路径并播放
      **/
     public void setVideoPath(String path) {
+        setVideoPath(path, -1, false);
+    }
+
+    /**
+     * 设置路径并播放
+     **/
+    public void setVideoPath(String path, int position, boolean isReverseScroll) {
         this.mPath = path;
+        this.mListPosition = position;
+        this.mListReverseScroll = isReverseScroll;
         play();
     }
 
@@ -179,14 +189,8 @@ public class VideoPlayer extends RelativeLayout {
 
         if (mMediaPlayer != null) {
             reset();
-            try {
-                mMediaPlayer.stop();
-            } catch (IllegalStateException e) {
-                e.printStackTrace();
-            }
             mMediaPlayer.setSurface(null);
-            MediaPlayer tmpMediaPlayer = mMediaPlayer;
-            new PlayerReleaseThread(tmpMediaPlayer).start();
+            mMediaPlayer.release();
             mMediaPlayer = null;
             mPlayerState = STATE_STOP;
             syncPlayerState(false);
@@ -199,7 +203,7 @@ public class VideoPlayer extends RelativeLayout {
             return 0;
         int position = 0;
         try {
-            position = mMediaPlayer.getCurrentPosition();
+            position = (int) mMediaPlayer.getCurrentPosition();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -213,7 +217,7 @@ public class VideoPlayer extends RelativeLayout {
         int duration = 0;
         try {
             if (mMediaPlayer == null) return 0;
-            duration = mMediaPlayer.getDuration();
+            duration = (int) mMediaPlayer.getDuration();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -234,60 +238,43 @@ public class VideoPlayer extends RelativeLayout {
     private void initListener() {
         mListener = new GlobalListener() {
             @Override
-            public void onBufferingUpdate(MediaPlayer mp, int percent) {
-                setLoadingProgress(percent);
+            public void onError() {
+//                Log.e("VideoPlayer", "onError (" + what + "," + extra + ")");
+                pause();
+                release();
             }
 
             @Override
-            public void onCompletion(MediaPlayer mp) {
+            public void onCompletion() {
                 setVideoPlayCompletion();
             }
 
             @Override
-            public boolean onError(MediaPlayer mp, int what, int extra) {
-                Log.e("VideoPlayer", "onError (" + what + "," + extra + ")");
-                pause();
-                release();
-                return false;
-            }
-
-            @Override
-            public boolean onInfo(MediaPlayer mp, int what, int extra) {
+            public void onInfo(int what, int extra) {
                 if (what == MEDIA_INFO_VIDEO_RENDERING_START) {
                     mThumbIv.setVisibility(GONE);
                 }
-                return false;
             }
 
             @Override
-            public void onPrepared(MediaPlayer mp) {
-                try {
-                    if (mMediaPlayer != null)
-                        mMediaPlayer.start();
-                } catch (IllegalStateException e) {
-                    e.printStackTrace();
-                }
-                if (mMediaPlayer != null && mCurrentProgress > 0 && mCurrentProgress < mDuration)
-                    mMediaPlayer.seekTo((int) mCurrentProgress);
-
+            public void onPrepared() {
                 setScreenOn(true);
                 syncPlayerState(true);
+
+                if (mPlayListener != null) {
+                    mPlayListener.prepareFinish(mListPosition, mListReverseScroll);
+                }
             }
 
             @Override
-            public void onSeekComplete(MediaPlayer mp) {
-                syncPlayerState(true);
-            }
-
-            @Override
-            public void onTimedText(MediaPlayer mp, TimedText text) {
-
-            }
-
-            @Override
-            public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
+            public void onVideoSizeChanged(int width, int height) {
                 if (mTextureView != null)
                     mTextureView.setVideoSize(width, height);
+            }
+
+            @Override
+            public void onBufferingUpdate(int percent) {
+                setLoadingProgress(percent);
             }
 
             @Override
@@ -351,14 +338,10 @@ public class VideoPlayer extends RelativeLayout {
 
     private void load() {
         createPlayer();
-        try {
-            mMediaPlayer.setDataSource(mPath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        mMediaPlayer.setDataSource(mPath);
         if (mSurface != null) {
             mMediaPlayer.setSurface(mSurface);
-            mMediaPlayer.setScreenOnWhilePlaying(true);
+//            mMediaPlayer.setScreenOnWhilePlaying(true);
         }
         try {
             mMediaPlayer.prepareAsync();
@@ -378,17 +361,9 @@ public class VideoPlayer extends RelativeLayout {
             mMediaPlayer.release();
         }
 
-        mMediaPlayer = new MediaPlayer();
-        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-//        mMediaPlayer.setLooping(true);
-        mMediaPlayer.setOnPreparedListener(mListener);
-        mMediaPlayer.setOnInfoListener(mListener);
-        mMediaPlayer.setOnSeekCompleteListener(mListener);
-        mMediaPlayer.setOnBufferingUpdateListener(mListener);
-        mMediaPlayer.setOnErrorListener(mListener);
-        mMediaPlayer.setOnVideoSizeChangedListener(mListener);
-        mMediaPlayer.setOnTimedTextListener(mListener);
-        mMediaPlayer.setOnCompletionListener(mListener);
+        mMediaPlayer = IjkPlayerFactory.create().createPlayer();
+        mMediaPlayer.setPlayerEventListener(mListener);
+        mMediaPlayer.initPlayer();
     }
 
     private void setScreenOn(boolean status) {
@@ -459,37 +434,16 @@ public class VideoPlayer extends RelativeLayout {
         }
     }
 
-    // 销毁播放器
-    private static class PlayerReleaseThread extends Thread {
-        private final MediaPlayer mReleaseMediaPlayer;
-
-        PlayerReleaseThread(MediaPlayer releaseMediaPlayer) {
-            this.mReleaseMediaPlayer = releaseMediaPlayer;
-        }
-
-        @Override
-        public void run() {
-            super.run();
-            if (mReleaseMediaPlayer != null)
-                mReleaseMediaPlayer.release();
-        }
-    }
-
     private abstract static class GlobalListener
             implements OnClickListener,
             TextureView.SurfaceTextureListener,
-            MediaPlayer.OnBufferingUpdateListener,
-            MediaPlayer.OnCompletionListener,
-            MediaPlayer.OnPreparedListener,
-            MediaPlayer.OnInfoListener,
-            MediaPlayer.OnVideoSizeChangedListener,
-            MediaPlayer.OnErrorListener,
-            MediaPlayer.OnSeekCompleteListener,
-            MediaPlayer.OnTimedTextListener {
+            AbstractPlayer.PlayerEventListener {
     }
 
     public interface OnPlayListener {
         void repeatNum(int repeatNum);
+
+        void prepareFinish(int position, boolean isReverseScroll);
     }
 
 }
