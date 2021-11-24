@@ -12,8 +12,8 @@ public class SmallVideoListAct extends BaseActivity {
         setTranslucentStatus(getWindow(), true);
         setContentView(R.layout.activity_small_video_list);
 
-        IjkMediaPlayer.loadLibrariesOnce(null);
-        IjkMediaPlayer.native_profileBegin("libijkplayer.so");
+//        IjkMediaPlayer.loadLibrariesOnce(null);
+//        IjkMediaPlayer.native_profileBegin("libijkplayer.so");
 
         String type = getIntent().getStringExtra("type");
 
@@ -34,6 +34,6 @@ public class SmallVideoListAct extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        IjkMediaPlayer.native_profileEnd();
+//        IjkMediaPlayer.native_profileEnd();
     }
 }

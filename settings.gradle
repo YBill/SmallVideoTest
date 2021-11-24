@@ -9,3 +9,4 @@ dependencyResolutionManagement {
 rootProject.name = "SmallVideoTest"
 include ':app'
 include ':videocache'
+include ':baseplayer'

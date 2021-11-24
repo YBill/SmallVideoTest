@@ -43,7 +43,8 @@ public final class Logger {
 
     public static void error(String msg, Throwable throwable) {
         if (IS_DEBUG) {
-            Log.e(TAG, msg, throwable);
+//            Log.e(TAG, msg, throwable);
+            Log.e(TAG, msg);
         }
     }
 }
