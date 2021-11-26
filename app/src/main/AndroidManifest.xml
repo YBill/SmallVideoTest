@@ -13,7 +13,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmallVideoTest"
         android:usesCleartextTraffic="true">
-        <activity android:name=".CacheTestActivity"
+        <activity
+            android:name=".PlayerTestAct"
+            android:exported="true" />
+        <activity
+            android:name=".CacheTestActivity"
             android:exported="true" />
         <activity
             android:name=".SplitScreenActivity"
