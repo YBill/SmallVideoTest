@@ -20,7 +20,12 @@ public class PreloadManager {
     /**
      * 单线程池，按照添加顺序依次执行{@link PreloadTask}
      */
-    private final ExecutorService mExecutorService = Executors.newSingleThreadExecutor();
+//    private final ExecutorService mExecutorService = Executors.newSingleThreadExecutor();
+
+    /**
+     * 设置最多3个线程同时下载
+     */
+    private final ExecutorService mExecutorService = Executors.newFixedThreadPool(3);
 
     /**
      * 保存正在预加载的{@link PreloadTask}
@@ -37,7 +42,7 @@ public class PreloadManager {
     /**
      * 预加载的大小，每个视频预加载1M
      */
-    private static final int PRELOAD_LENGTH = 1 * 1024 * 1024;
+    private static final int PRELOAD_LENGTH = 1024 * 1024;
 
     public static class SingletonHolder {
         private static PreloadManager instance = new PreloadManager();

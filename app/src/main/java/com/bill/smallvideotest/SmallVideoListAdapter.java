@@ -21,10 +21,8 @@ import java.util.List;
  */
 public class SmallVideoListAdapter extends BaseVideoAnswerAdapter {
 
-    private Context mContext;
-
     public SmallVideoListAdapter(Context context) {
-        mContext = context;
+        super(context);
     }
 
     public void setDataList(List<SmallVideoBean> list) {

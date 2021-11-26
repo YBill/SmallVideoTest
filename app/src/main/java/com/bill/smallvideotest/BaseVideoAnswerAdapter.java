@@ -1,5 +1,6 @@
 package com.bill.smallvideotest;
 
+import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -7,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bill.smallvideotest.cache.PreloadManager;
+import com.bumptech.glide.Glide;
 
 import java.util.List;
 
@@ -17,9 +19,14 @@ import java.util.List;
  */
 public abstract class BaseVideoAnswerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    public List<SmallVideoBean> mDataList;
+    protected Context mContext;
+    protected List<SmallVideoBean> mDataList;
 
     private int mCurrentPosition = -1;
+
+    public BaseVideoAnswerAdapter(Context context) {
+        mContext = context;
+    }
 
     @Override
     public void onViewAttachedToWindow(@NonNull RecyclerView.ViewHolder holder) {
@@ -39,17 +46,18 @@ public abstract class BaseVideoAnswerAdapter extends RecyclerView.Adapter<Recycl
         PreloadManager.getInstance().removePreloadTaskAndDiskOutOfRange(startPos, endPos);
 
         if (isReverseScroll) {
-            for (int i = position - 1; i >= Math.max(position - 1, 0); i--) {
+            for (int i = position - 1; i >= Math.max(position - 2, 0); i--) {
                 String url = getVideoUrl(i);
                 if (!TextUtils.isEmpty(url)) {
                     PreloadManager.getInstance().addPreloadTask(url, i, false);
                 }
             }
         } else {
-            for (int i = position + 1; i <= Math.min(position + 2, getItemCount()); i++) {
+            for (int i = position + 1; i <= Math.min(position + 3, getItemCount()); i++) {
                 String url = getVideoUrl(i);
                 if (!TextUtils.isEmpty(url)) {
                     PreloadManager.getInstance().addPreloadTask(url, i, false);
+                    preloadImg(i);
                 }
             }
         }
@@ -64,6 +72,15 @@ public abstract class BaseVideoAnswerAdapter extends RecyclerView.Adapter<Recycl
         }
         SmallVideoBean videoItemBean = mDataList.get(position);
         return videoItemBean.path;
+    }
+
+    private void preloadImg(int position) {
+        if (position < 0 || position >= mDataList.size()) {
+            return;
+        }
+
+        SmallVideoBean videoItemBean = mDataList.get(position);
+        Glide.with(mContext).load(videoItemBean.image).preload();
     }
 
 }
