@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 /**
  * author ywb
  * date 2021/11/24
- * desc
+ * desc  此类的目的是为了在ControlComponent中既能调用VideoView的api又能调用BaseVideoController的api，并对部分api做了封装，方便使用
  */
 public class ControlWrapper implements PlayerControl, IVideoController {
 
@@ -141,6 +141,61 @@ public class ControlWrapper implements PlayerControl, IVideoController {
         return mPlayerControl.isTinyScreen();
     }
 
+    @Override
+    public void startFadeOut() {
+        mController.startFadeOut();
+    }
+
+    @Override
+    public void stopFadeOut() {
+        mController.stopFadeOut();
+    }
+
+    @Override
+    public boolean isShowing() {
+        return mController.isShowing();
+    }
+
+    @Override
+    public void setLocked(boolean locked) {
+        mController.setLocked(locked);
+    }
+
+    @Override
+    public boolean isLocked() {
+        return mController.isLocked();
+    }
+
+    @Override
+    public void startProgress() {
+        mController.startProgress();
+    }
+
+    @Override
+    public void stopProgress() {
+        mController.stopProgress();
+    }
+
+    @Override
+    public void hide() {
+        mController.hide();
+    }
+
+    @Override
+    public void show() {
+        mController.show();
+    }
+
+    @Override
+    public boolean hasCutout() {
+        return mController.hasCutout();
+    }
+
+    @Override
+    public int getCutoutHeight() {
+        return mController.getCutoutHeight();
+    }
+
     /**
      * 播放和暂停
      */
@@ -198,61 +253,6 @@ public class ControlWrapper implements PlayerControl, IVideoController {
                 activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             }
         }
-    }
-
-    @Override
-    public void startFadeOut() {
-        mController.startFadeOut();
-    }
-
-    @Override
-    public void stopFadeOut() {
-        mController.stopFadeOut();
-    }
-
-    @Override
-    public boolean isShowing() {
-        return mController.isShowing();
-    }
-
-    @Override
-    public void setLocked(boolean locked) {
-        mController.setLocked(locked);
-    }
-
-    @Override
-    public boolean isLocked() {
-        return mController.isLocked();
-    }
-
-    @Override
-    public void startProgress() {
-        mController.startProgress();
-    }
-
-    @Override
-    public void stopProgress() {
-        mController.stopProgress();
-    }
-
-    @Override
-    public void hide() {
-        mController.hide();
-    }
-
-    @Override
-    public void show() {
-        mController.show();
-    }
-
-    @Override
-    public boolean hasCutout() {
-        return mController.hasCutout();
-    }
-
-    @Override
-    public int getCutoutHeight() {
-        return mController.getCutoutHeight();
     }
 
     /**
