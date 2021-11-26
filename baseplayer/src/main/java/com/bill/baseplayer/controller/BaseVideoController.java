@@ -89,7 +89,7 @@ public abstract class BaseVideoController extends FrameLayout implements
      */
     public boolean showNetWarning() {
         return Utils.isMobileNet(getContext())
-                && !VideoViewManager.instance().playOnMobileNetwork();
+                && !VideoViewManager.getInstance().playOnMobileNetwork();
     }
 
     /**

@@ -20,6 +20,8 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.bill.baseplayer.config.VideoViewConfig;
+import com.bill.baseplayer.config.VideoViewManager;
 import com.bill.baseplayer.controller.BaseVideoController;
 import com.bill.baseplayer.controller.PlayerControl;
 import com.bill.baseplayer.render.IRenderView;
@@ -37,7 +39,7 @@ import java.util.Map;
  * date 2021/11/26
  * desc
  */
-public class VideoView<P extends AbstractPlayer> extends FrameLayout implements PlayerControl, AbstractPlayer.PlayerEventListener {
+public class VideoView extends FrameLayout implements PlayerControl, AbstractPlayer.PlayerEventListener {
 
     public static final int SCREEN_SCALE_DEFAULT = 0;
     public static final int SCREEN_SCALE_16_9 = 1;
@@ -65,8 +67,8 @@ public class VideoView<P extends AbstractPlayer> extends FrameLayout implements 
     protected int mCurrentPlayerState = PLAYER_NORMAL; // 当前播放器的状态
     protected int mCurrentPlayState = STATE_IDLE; // 当前的播放状态
 
-    protected P mMediaPlayer; // 播放器
-    protected PlayerFactory<P> mPlayerFactory; // 用于实例化播放核心
+    protected AbstractPlayer mMediaPlayer; // 播放器
+    protected PlayerFactory mPlayerFactory; // 用于实例化播放核心
     protected BaseVideoController mVideoController; // 控制器
 
     protected FrameLayout mPlayerContainer; // 播放总视图
@@ -130,6 +132,14 @@ public class VideoView<P extends AbstractPlayer> extends FrameLayout implements 
     }
 
     private void init() {
+        // 读取全局配置
+        VideoViewConfig config = VideoViewManager.getInstance().getConfig();
+        mEnableAudioFocus = config.mEnableAudioFocus;
+        mProgressManager = config.mProgressManager;
+        mPlayerFactory = config.mPlayerFactory;
+        mCurrentScreenScaleType = config.mScreenScaleType;
+        mRenderViewFactory = config.mRenderViewFactory;
+
         initView();
     }
 
@@ -486,7 +496,7 @@ public class VideoView<P extends AbstractPlayer> extends FrameLayout implements 
     /**
      * 自定义播放核心，继承{@link PlayerFactory}实现自己的播放核心
      */
-    public void setPlayerFactory(PlayerFactory<P> playerFactory) {
+    public void setPlayerFactory(PlayerFactory playerFactory) {
         if (playerFactory == null) {
             throw new IllegalArgumentException("PlayerFactory can not be null!");
         }

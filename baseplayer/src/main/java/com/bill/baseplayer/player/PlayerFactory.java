@@ -7,8 +7,8 @@ import android.content.Context;
  * date 2021/11/24
  * desc
  */
-public abstract class PlayerFactory<P extends AbstractPlayer> {
+public abstract class PlayerFactory {
 
-    public abstract P createPlayer(Context context);
+    public abstract AbstractPlayer createPlayer(Context context);
 
 }
