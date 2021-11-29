@@ -40,9 +40,4 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, CacheTestActivity.class);
         startActivity(intent);
     }
-
-    public void handlePlayer(View view) {
-        Intent intent = new Intent(this, PlayerTestAct.class);
-        startActivity(intent);
-    }
 }
