@@ -77,7 +77,11 @@ public class SmallVideoListAdapter extends BaseVideoAnswerAdapter {
             mVideoPlayer.setPlayListener(new VideoPlayer.OnPlayListener() {
                 @Override
                 public void repeatNum(int repeatNum) {
-
+                    // 播放超过一遍自动跳到下一个视频
+                    if (repeatNum > 2 && position + 1 < getItemCount()) {
+                        if (mPlayerListener != null)
+                            mPlayerListener.playNext();
+                    }
                 }
 
                 @Override
@@ -90,5 +94,15 @@ public class SmallVideoListAdapter extends BaseVideoAnswerAdapter {
         public void releaseCurrentView() {
             mThumbIv.setVisibility(View.VISIBLE);
         }
+    }
+
+    private OnPlayerListener mPlayerListener;
+
+    public void setPlayerListener(OnPlayerListener mPlayerListener) {
+        this.mPlayerListener = mPlayerListener;
+    }
+
+    public interface OnPlayerListener {
+        void playNext();
     }
 }

@@ -1,7 +1,6 @@
 package com.bill.smallvideotest;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -89,6 +88,11 @@ public class SmallVideoFragment extends Fragment {
         mAdapter = new SmallVideoListAdapter(getActivity());
         mAdapter.setDataList(getData());
         mVideoRv.setAdapter(mAdapter);
+        mAdapter.setPlayerListener(() -> {
+            if (mPlayerHelper != null) {
+                mPlayerHelper.switchToNext();
+            }
+        });
 
         mPlayerHelper = new PlayerHelper(getActivity(), mVideoRv);
         this.getLifecycle().addObserver(mPlayerHelper);

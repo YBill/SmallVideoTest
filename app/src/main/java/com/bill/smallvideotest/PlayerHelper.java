@@ -97,6 +97,11 @@ public class PlayerHelper implements LifecycleObserver {
         }
     }
 
+    public void switchToNext() {
+        if (mRecyclerView != null && mCurrentPosition >= 0)
+            mRecyclerView.smoothScrollToPosition(mCurrentPosition + 1);
+    }
+
     public void setOnPreLoadListener(OnPreLoadListener mOnPreLoadListener) {
         this.mOnPreLoadListener = mOnPreLoadListener;
     }
